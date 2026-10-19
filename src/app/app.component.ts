@@ -383,6 +383,16 @@ export class AppComponent {
     return this.options.find((option) => option.value === value)?.display ?? '—';
   }
 
+  ratingPrintValue(rowId: string, teamId: string): string {
+    const value = this.ratingFor(rowId, teamId);
+    const option = this.options.find((ratingOption) => ratingOption.value === value);
+    return option ? `${option.display} ${option.label}` : '— Not rated';
+  }
+
+  exportPdf(): void {
+    window.print();
+  }
+
   ratingKey(rowId: string, teamId: string): string {
     return `${rowId}:${teamId}`;
   }

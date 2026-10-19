@@ -44,6 +44,9 @@
         <button class="text-button" type="button" (click)="exportBackup()" aria-label="Download JSON backup">
           <span aria-hidden="true">↓</span> Export
         </button>
+        <button class="text-button" type="button" (click)="exportPdf()" aria-label="Save Project Checklist results as PDF" title="Choose Save to PDF in the print dialog">
+          <span aria-hidden="true">▤</span> PDF
+        </button>
         <button class="text-button import-button" type="button" (click)="backupFile.click()" aria-label="Import JSON backup">
           <span aria-hidden="true">↑</span> Import
         </button>
@@ -160,6 +163,7 @@
                   <select class="rating-select" [class.has-rating]="ratingFor(overallRowId, team.id) !== ''" [class.rating-critical]="ratingFor(overallRowId, team.id) === 'no' || ratingFor(overallRowId, team.id) === 'football'" [id]="'rating-overall-' + team.id" [value]="ratingFor(overallRowId, team.id)" (change)="updateRating(overallRowId, team.id, $event)">
                     @for (option of options; track option.value) { <option [value]="option.value">{{ option.display }} {{ option.label }}</option> }
                   </select>
+                  <span class="print-rating">{{ ratingPrintValue(overallRowId, team.id) }}</span>
                 </div>
               }
             </div>
@@ -205,6 +209,7 @@
                         <select class="rating-select" [class.has-rating]="ratingFor('item:' + item.id, team.id) !== ''" [class.rating-critical]="ratingFor('item:' + item.id, team.id) === 'no' || ratingFor('item:' + item.id, team.id) === 'football'" [id]="'rating-' + item.id + '-' + team.id" [value]="ratingFor('item:' + item.id, team.id)" (change)="updateRating('item:' + item.id, team.id, $event)">
                           @for (option of options; track option.value) { <option [value]="option.value">{{ option.display }} {{ option.label }}</option> }
                         </select>
+                        <span class="print-rating">{{ ratingPrintValue('item:' + item.id, team.id) }}</span>
                       </div>
                     }
                   </div>
@@ -220,6 +225,7 @@
                       <select class="rating-select" [class.has-rating]="ratingFor('section:' + section.id, team.id) !== ''" [class.rating-critical]="ratingFor('section:' + section.id, team.id) === 'no' || ratingFor('section:' + section.id, team.id) === 'football'" [id]="'rating-section-' + section.id + '-' + team.id" [value]="ratingFor('section:' + section.id, team.id)" (change)="updateRating('section:' + section.id, team.id, $event)">
                         @for (option of options; track option.value) { <option [value]="option.value">{{ option.display }} {{ option.label }}</option> }
                       </select>
+                      <span class="print-rating">{{ ratingPrintValue('section:' + section.id, team.id) }}</span>
                     </div>
                   }
                 </div>

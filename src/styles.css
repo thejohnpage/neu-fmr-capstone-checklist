@@ -357,3 +357,31 @@ h1 em { color: #738d5b; font-weight: 400; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+.print-rating { display: none; }
+
+@page { size: landscape; margin: 12mm; }
+
+@media print {
+  html, body { min-width: 0; background: #fff; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sidebar, .topbar, .team-settings, .startup-overlay, .team-editor-overlay { display: none !important; }
+  .workspace-shell, .main-content { min-height: 0; }
+  .main-content { margin: 0; }
+  .page-wrap { width: 100%; max-width: none; padding: 0; }
+  .intro { min-height: 0; padding: 0 0 18px; }
+  h1 { font-size: 32px; }
+  .intro-stat { display: none; }
+  .team-key { break-inside: avoid; }
+  .rating-key { padding: 10px 2px 14px; }
+  .overall-section, .review-section { box-shadow: none; break-inside: avoid-page; }
+  .overall-section { margin-bottom: 14px; }
+  .section-list { gap: 12px; }
+  .overall-matrix, .review-section .rating-matrix { overflow: visible; padding: 0; }
+  .matrix-header, .matrix-row, .review-section .matrix-header, .review-section .matrix-row { grid-template-columns: minmax(240px, 2fr) repeat(var(--team-count), minmax(88px, 1fr)); min-width: 0; }
+  .matrix-team-heading small { overflow: visible; text-overflow: clip; white-space: normal; }
+  .mobile-team-name { display: none !important; }
+  .rating-select { display: none !important; }
+  .print-rating { display: inline; color: #344936; font-size: 9px; font-weight: 600; }
+  .matrix-row, .matrix-header, .section-heading, .page-footer { break-inside: avoid; }
+}
