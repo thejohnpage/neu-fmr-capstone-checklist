@@ -21,6 +21,13 @@ To verify a production build:
 npm run build
 ```
 
+## Generate a PDF report
+
+1. Run the app and open the checklist with the review data you want to include.
+2. Select **PDF** in the top toolbar.
+3. In the browser's print dialog, choose **Save to PDF**, then select a filename and destination. The report is laid out in landscape orientation.
+4. Generate a new PDF after changing ratings or team details; the PDF is a snapshot and is not updated automatically.
+
 ## Save exports in the project folder
 
 Create a `data` folder in the project root. This folder is intentionally not excluded by `.gitignore`.
