@@ -1,0 +1,333 @@
+<div class="workspace-shell" [attr.inert]="startupModalOpen || teamFormOpen ? '' : null">
+  <aside class="sidebar" aria-label="Review navigation">
+    <a class="brand" href="#top" aria-label="LEAP review home">
+      <span class="brand-mark" aria-hidden="true">L</span>
+      <span class="brand-copy"><strong>LEAP</strong><small>PROJECT REVIEW</small></span>
+    </a>
+
+    <div class="review-label">RUN 02 <span>·</span> 2026</div>
+    <div class="sidebar-heading">Checklist sections</div>
+    <nav class="section-nav">
+      @for (section of sections; track section.id; let index = $index) {
+        <a [href]="'#' + section.id" class="nav-link">
+          <span class="nav-number">0{{ index + 1 }}</span>
+          <span class="nav-link-copy">
+            <span>{{ section.title }}</span>
+            <small>{{ sectionCompleted(section) }} / {{ (section.items.length + 1) * teams.length }} rated</small>
+          </span>
+          <span class="nav-dot" [class.complete]="sectionCompleted(section) === (section.items.length + 1) * teams.length" aria-hidden="true"></span>
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-progress">
+      <div class="progress-heading"><span>Review progress</span><strong>{{ completionPercent }}%</strong></div>
+      <div class="progress-track" role="progressbar" [attr.aria-valuenow]="completionPercent" aria-valuemin="0" aria-valuemax="100" aria-label="Overall checklist completion">
+        <span [style.width.%]="completionPercent"></span>
+      </div>
+      <small>{{ completedRatings }} of {{ totalRatings }} ratings entered</small>
+    </div>
+
+    <div class="sidebar-note"><span class="note-icon" aria-hidden="true">◉</span><span>Private to this device<br><strong>Autosaved in your browser</strong></span></div>
+  </aside>
+
+  <main id="top" class="main-content">
+    <header class="topbar">
+      <div class="breadcrumb"><span>LEAP RUN 02</span><span aria-hidden="true">/</span><strong>Project checklist</strong></div>
+      <div class="topbar-actions">
+        <span class="save-indicator" [class.save-error]="saveState === 'error'" [class.is-saving]="saveState === 'saving'" role="status" aria-live="polite">
+          <span class="save-dot" aria-hidden="true"></span>{{ saveMessage }}
+        </span>
+        <span class="export-indicator" [class.export-needed]="configDirty" [attr.aria-label]="configDirty ? 'Team configuration needs export' : 'Team configuration export is current'">Config: {{ configDirty ? 'export needed' : 'current' }}</span>
+        <span class="export-indicator" [class.export-needed]="resultsDirty" [attr.aria-label]="resultsDirty ? 'Project Checklist results need export' : 'Project Checklist results export is current'">Results: {{ resultsDirty ? 'export needed' : 'current' }}</span>
+        <div class="action-divider" aria-hidden="true"></div>
+        <button class="text-button" type="button" (click)="exportBackup()" aria-label="Download JSON backup">
+          <span aria-hidden="true">↓</span> Export
+        </button>
+        <button class="text-button import-button" type="button" (click)="backupFile.click()" aria-label="Import JSON backup">
+          <span aria-hidden="true">↑</span> Import
+        </button>
+        <input #backupFile id="backup-file" class="visually-hidden" type="file" accept="application/json,.json" (change)="importBackup($event)" aria-label="Choose a JSON backup file to import">
+        <button class="reset-button" type="button" (click)="resetRatings()">Reset ratings</button>
+      </div>
+    </header>
+
+    <div class="page-wrap">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> TEAM EVALUATION <span class="eyebrow-separator">/</span> 2026</div>
+          <h1 id="page-title">Project <em>checklist</em></h1>
+          <p>Capture every team's review in one place. Choose a rating for each criterion, then add a section and overall assessment.</p>
+        </div>
+        <div class="intro-stat" [attr.aria-label]="teams.length + ' reviewing teams'">
+          <span class="stat-number">{{ teamCountLabel }}</span>
+          <span class="stat-label">REVIEWING<br>TEAMS</span>
+        </div>
+      </section>
+
+      <section class="team-key" aria-labelledby="team-key-title" [style.--team-count]="teams.length">
+        <div class="team-key-heading">
+          <span id="team-key-title">Reviewing teams</span>
+          <span class="team-key-rule"></span>
+          <span class="team-key-count">01 — {{ teamCountLabel }}</span>
+        </div>
+        <div class="team-list">
+          @for (team of teams; track team.id; let index = $index) {
+            <div class="team-identity">
+              <span class="team-index">{{ (index + 1).toString().padStart(2, '0') }}</span>
+              <span class="team-abbreviation">{{ team.shortName }}</span>
+              <span class="team-full-name">{{ team.name }}</span>
+            </div>
+          }
+        </div>
+        <details class="team-settings">
+          <summary>Manage teams <span>{{ teams.length }} configured</span></summary>
+          <div class="team-settings-content">
+            <div class="team-settings-heading">
+              <div>
+                <h2>Reviewer team settings</h2>
+                <p>Manage team names and member rosters. Changes are saved in this browser; export the configuration to keep a JSON copy.</p>
+              </div>
+              <button class="settings-primary-button" type="button" (click)="startAddTeam()">Add team</button>
+            </div>
+            <ul class="managed-team-list" aria-label="Configured reviewer teams">
+              @for (team of teams; track team.id) {
+                <li class="managed-team">
+                  <div class="managed-team-top">
+                    <div><strong>{{ team.shortName }}</strong><span>{{ team.name }}</span></div>
+                    <div class="managed-team-actions">
+                      <button class="settings-text-button" type="button" (click)="startEditTeam(team)">Edit</button>
+                      <button class="settings-text-button settings-delete-button" type="button" [disabled]="teams.length <= 1" (click)="deleteTeam(team)" [attr.aria-label]="'Delete ' + team.name">Delete</button>
+                    </div>
+                  </div>
+                  <ul class="managed-member-list" [attr.aria-label]="'Members of ' + team.name">
+                    @for (member of team.members; track member.id) {
+                      <li><span>{{ member.name }}</span></li>
+                    } @empty {
+                      <li class="empty-member-list">No members added</li>
+                    }
+                  </ul>
+                </li>
+              }
+            </ul>
+            <div class="team-config-actions">
+              <div>
+                <strong>Team configuration file</strong>
+                <span>Separate from rating backups; IDs preserve ratings when names change.</span>
+              </div>
+              <div class="team-config-buttons">
+                <button class="settings-secondary-button" type="button" (click)="exportTeamConfig()">Export config</button>
+                <button class="settings-secondary-button" type="button" (click)="teamConfigFile.click()">Import config</button>
+                <input #teamConfigFile class="visually-hidden" type="file" accept="application/json,.json" (change)="importTeamConfig($event)" aria-label="Choose a reviewer team configuration JSON file">
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="rating-key" aria-label="Rating choices">
+        <span class="key-title">RATING KEY</span>
+        <span class="key-choice"><span aria-hidden="true">⭐–⭐⭐⭐⭐⭐</span> Meets criteria</span>
+        <span class="key-choice"><span aria-hidden="true">❌ / 🏈</span> Does not meet</span>
+        <span class="key-choice"><span aria-hidden="true">❓</span> Needs clarification</span>
+        <span class="key-choice"><span aria-hidden="true">🔍</span> Review further</span>
+        <span class="key-choice"><span aria-hidden="true">—</span> Not rated</span>
+      </section>
+
+      <section class="overall-section" aria-labelledby="overall-title">
+        <div class="overall-heading">
+          <div>
+            <div class="section-kicker">FINAL ASSESSMENT <span>·</span> ALL TEAMS</div>
+            <h2 id="overall-title">Overall rating</h2>
+            <p>One final assessment for each reviewing team.</p>
+          </div>
+          <span class="critical-tag">CRITICAL</span>
+        </div>
+        <div class="rating-matrix overall-matrix" role="group" aria-label="Overall team ratings" [style.--team-count]="teams.length">
+          <div class="matrix-header">
+            <div class="matrix-label">TEAM</div>
+            @for (team of teams; track team.id) {
+              <div class="matrix-team-heading"><span>{{ team.shortName }}</span><small>{{ team.name }}</small></div>
+            }
+          </div>
+          <div class="matrix-row overall-row">
+            <div class="criterion"><span class="criterion-index">00</span><span class="criterion-name">Overall project assessment</span></div>
+            <div class="rating-cells">
+              @for (team of teams; track team.id) {
+                <div class="team-rating">
+                  <span class="mobile-team-name">{{ team.shortName }} <span>{{ team.name }}</span></span>
+                  <label class="visually-hidden" [for]="'rating-overall-' + team.id">Overall rating — {{ team.name }}</label>
+                  <select class="rating-select" [class.has-rating]="ratingFor(overallRowId, team.id) !== ''" [class.rating-critical]="ratingFor(overallRowId, team.id) === 'no' || ratingFor(overallRowId, team.id) === 'football'" [id]="'rating-overall-' + team.id" [value]="ratingFor(overallRowId, team.id)" (change)="updateRating(overallRowId, team.id, $event)">
+                    @for (option of options; track option.value) { <option [value]="option.value">{{ option.display }} {{ option.label }}</option> }
+                  </select>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-list">
+        @for (section of sections; track section.id; let index = $index) {
+          <section class="review-section" [id]="section.id" [attr.aria-labelledby]="section.id + '-title'">
+            <div class="section-heading">
+              <div class="section-title-group">
+                <span class="section-number">0{{ index + 1 }}</span>
+                <div>
+                  <div class="section-kicker">REVIEW AREA <span>·</span> {{ section.items.length }} CRITERIA</div>
+                  <h2 [id]="section.id + '-title'">{{ section.title }}</h2>
+                </div>
+              </div>
+              <div class="section-completion">
+                <span>{{ sectionCompleted(section) }} <span class="completion-total">/ {{ (section.items.length + 1) * teams.length }}</span></span>
+                <small>RATINGS</small>
+              </div>
+            </div>
+
+            <div class="rating-matrix" role="group" [attr.aria-label]="section.title + ' ratings by team'" [style.--team-count]="teams.length">
+              <div class="matrix-header">
+                <div class="matrix-label">EVALUATION ITEM <span>/ PRIORITY</span></div>
+                @for (team of teams; track team.id) {
+                  <div class="matrix-team-heading"><span>{{ team.shortName }}</span><small>{{ team.name }}</small></div>
+                }
+              </div>
+              @for (item of section.items; track item.id; let itemIndex = $index) {
+                <div class="matrix-row">
+                  <div class="criterion">
+                    <span class="criterion-index">{{ (itemIndex + 1).toString().padStart(2, '0') }}</span>
+                    <span class="criterion-copy"><span class="criterion-name">{{ item.description }}</span><span class="priority-tag" [class.priority-must]="item.priority === 'Must'" [class.priority-should]="item.priority === 'Should'">{{ item.priority }}</span></span>
+                  </div>
+                  <div class="rating-cells">
+                    @for (team of teams; track team.id) {
+                      <div class="team-rating">
+                        <span class="mobile-team-name">{{ team.shortName }} <span>{{ team.name }}</span></span>
+                        <label class="visually-hidden" [for]="'rating-' + item.id + '-' + team.id">{{ item.description }} — {{ team.name }}</label>
+                        <select class="rating-select" [class.has-rating]="ratingFor('item:' + item.id, team.id) !== ''" [class.rating-critical]="ratingFor('item:' + item.id, team.id) === 'no' || ratingFor('item:' + item.id, team.id) === 'football'" [id]="'rating-' + item.id + '-' + team.id" [value]="ratingFor('item:' + item.id, team.id)" (change)="updateRating('item:' + item.id, team.id, $event)">
+                          @for (option of options; track option.value) { <option [value]="option.value">{{ option.display }} {{ option.label }}</option> }
+                        </select>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+              <div class="matrix-row section-rating-row">
+                <div class="criterion"><span class="criterion-index">Σ</span><span class="criterion-name">Section rating <span class="critical-inline">CRITICAL</span></span></div>
+                <div class="rating-cells">
+                  @for (team of teams; track team.id) {
+                    <div class="team-rating">
+                      <span class="mobile-team-name">{{ team.shortName }} <span>{{ team.name }}</span></span>
+                      <label class="visually-hidden" [for]="'rating-section-' + section.id + '-' + team.id">{{ section.title }} section rating — {{ team.name }}</label>
+                      <select class="rating-select" [class.has-rating]="ratingFor('section:' + section.id, team.id) !== ''" [class.rating-critical]="ratingFor('section:' + section.id, team.id) === 'no' || ratingFor('section:' + section.id, team.id) === 'football'" [id]="'rating-section-' + section.id + '-' + team.id" [value]="ratingFor('section:' + section.id, team.id)" (change)="updateRating('section:' + section.id, team.id, $event)">
+                        @for (option of options; track option.value) { <option [value]="option.value">{{ option.display }} {{ option.label }}</option> }
+                      </select>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </section>
+        }
+      </div>
+
+      <footer class="page-footer"><span>LEAP RUN 02 <span>·</span> TEAM PROJECT REVIEW</span><span>Ratings are stored locally in this browser.</span></footer>
+    </div>
+  </main>
+</div>
+
+@if (teamFormOpen) {
+<div class="team-editor-overlay" (click)="closeTeamEditorFromBackdrop($event)">
+  <section class="team-editor-modal" #teamEditorDialog role="dialog" aria-modal="true" aria-labelledby="team-editor-title" aria-describedby="team-editor-description" tabindex="-1">
+    <header class="team-editor-heading">
+      <div>
+        <div class="startup-eyebrow">LEAP RUN 02 <span>·</span> TEAM SETTINGS</div>
+        <h2 id="team-editor-title">{{ editingTeamId ? 'Edit reviewer team' : 'Add reviewer team' }}</h2>
+        <p id="team-editor-description">Update team details and manage the member roster. Existing team member changes save immediately; new teams and their members are saved together.</p>
+      </div>
+      <button class="team-editor-close" type="button" aria-label="Close team editor" (click)="cancelTeamEdit()">×</button>
+    </header>
+    <form class="team-editor-form" (submit)="saveTeam($event)" novalidate>
+      <div class="team-editor-fields">
+        <label for="team-alias">Team alias
+          <input #teamAliasInput id="team-alias" type="text" [value]="teamAlias" (input)="updateTeamAlias($event)" autocomplete="off" maxlength="40" required aria-describedby="team-form-error">
+        </label>
+        <label for="team-full-name">Full team name
+          <input id="team-full-name" type="text" [value]="teamName" (input)="updateTeamName($event)" autocomplete="off" maxlength="100" required aria-describedby="team-form-error">
+        </label>
+      </div>
+      <p id="team-form-error" class="team-form-error" role="alert" [hidden]="!teamFormError">{{ teamFormError }}</p>
+      <section class="team-editor-roster" aria-labelledby="team-editor-roster-title">
+        <div class="team-editor-roster-heading">
+          <div>
+            <h3 id="team-editor-roster-title">Team members</h3>
+            <p>{{ draftMembers.length }} {{ draftMembers.length === 1 ? 'member' : 'members' }} in this roster</p>
+          </div>
+          <button class="settings-secondary-button" type="button" (click)="startAddMember()" [disabled]="memberFormOpen">Add member</button>
+        </div>
+        <ul class="team-editor-member-list" aria-label="Members in this team">
+          @for (member of draftMembers; track member.id) {
+            <li>
+              <span>{{ member.name }}</span>
+              <div class="managed-team-actions">
+                <button class="settings-text-button" type="button" (click)="startEditMember(member)" [disabled]="memberFormOpen" [attr.aria-label]="'Rename ' + member.name">Rename</button>
+                <button class="settings-text-button settings-delete-button" type="button" (click)="deleteMember(member)" [disabled]="memberFormOpen" [attr.aria-label]="'Delete ' + member.name">Delete</button>
+              </div>
+            </li>
+          } @empty {
+            <li class="empty-member-list">No members added yet.</li>
+          }
+        </ul>
+        @if (memberFormOpen) {
+          <div class="member-form">
+            <label for="team-member-name">Member name
+              <input #teamMemberNameInput id="team-member-name" type="text" [value]="memberName" (input)="updateMemberName($event)" (keydown.enter)="saveMember($event)" autocomplete="off" maxlength="100" required aria-describedby="member-form-error">
+            </label>
+            <p id="member-form-error" class="team-form-error" role="alert" [hidden]="!memberFormError">{{ memberFormError }}</p>
+            <div class="team-form-actions">
+              <button class="settings-primary-button" type="button" (click)="saveMember($event)">{{ editingMemberId ? 'Save name' : 'Add to roster' }}</button>
+              <button class="settings-secondary-button" type="button" (click)="cancelMemberEdit()">Cancel</button>
+            </div>
+          </div>
+        }
+      </section>
+      <footer class="team-editor-actions">
+        <button class="settings-secondary-button" type="button" (click)="cancelTeamEdit()">Cancel</button>
+        <button class="settings-primary-button" type="submit">{{ editingTeamId ? 'Save changes' : 'Add team' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>
+}
+
+<div class="startup-overlay" [hidden]="!startupModalOpen">
+  <section class="startup-modal" role="dialog" aria-modal="true" aria-labelledby="startup-title" aria-describedby="startup-description" tabindex="-1">
+    <div class="startup-eyebrow">LEAP RUN 02 <span>·</span> DATA SETUP</div>
+    <h2 id="startup-title">Load your review files</h2>
+    <p id="startup-description">Choose the separate team configuration and Project Checklist results files you want to use, or continue with data saved in this browser.</p>
+    <p class="startup-order-note"><strong>Load team configuration first</strong> if your team list has changed, then select the results file. Results are validated against the active team configuration.</p>
+    <div class="startup-file-options">
+      <section class="startup-file-option" aria-labelledby="startup-config-title">
+        <div class="startup-file-number">01</div>
+        <div>
+          <h3 id="startup-config-title">Team configuration</h3>
+          <p>Team names, stable IDs, and member lists.</p>
+        </div>
+        <button class="settings-secondary-button" type="button" (click)="startupConfigFile.click()">Choose config JSON</button>
+        <input #startupConfigFile class="visually-hidden" type="file" accept="application/json,.json" (change)="importTeamConfig($event)" aria-label="Choose a team configuration JSON file">
+      </section>
+      <section class="startup-file-option" aria-labelledby="startup-results-title">
+        <div class="startup-file-number">02</div>
+        <div>
+          <h3 id="startup-results-title">Project Checklist results</h3>
+          <p>Saved ratings from a results backup.</p>
+        </div>
+        <button class="settings-secondary-button" type="button" (click)="startupResultsFile.click()">Choose results JSON</button>
+        <input #startupResultsFile class="visually-hidden" type="file" accept="application/json,.json" (change)="importBackup($event)" aria-label="Choose a Project Checklist results JSON file">
+      </section>
+    </div>
+    <p class="startup-import-message" role="status" aria-live="polite" [hidden]="!startupImportMessage">{{ startupImportMessage }}</p>
+    <div class="startup-modal-actions">
+      <span>Browser-saved data is kept unless you import a file.</span>
+      <button class="settings-primary-button" type="button" autofocus (click)="continueWithSavedData()">Continue with current data</button>
+    </div>
+  </section>
+</div>

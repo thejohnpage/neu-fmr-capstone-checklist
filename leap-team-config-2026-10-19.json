@@ -1,0 +1,119 @@
+{
+  "format": "leap-review-team-config",
+  "version": 2,
+  "exportedAt": "2026-10-19T20:57:52.534Z",
+  "teams": [
+    {
+      "id": "jl",
+      "shortName": "JL",
+      "name": "Justice LEAPS",
+      "members": [
+        {
+          "id": "member-84fd1bec-a582-460a-8fba-5ebdb0d20ff3",
+          "name": "Aisha Kaukasvadia"
+        },
+        {
+          "id": "member-5347fe52-082d-4ff7-9a50-669e3ca3fdb3",
+          "name": "Aryan Kumar"
+        },
+        {
+          "id": "member-0497a437-585e-4ae2-9fdc-e0103285aea3",
+          "name": "Jason Zamora"
+        },
+        {
+          "id": "member-18b6725b-f194-4bf3-b6bd-a9307680bd8e",
+          "name": "London Haith"
+        },
+        {
+          "id": "member-d7dd19b0-973f-49a6-800d-d0cf9f07000a",
+          "name": "Michael Hernandez"
+        },
+        {
+          "id": "member-937fa8b6-e728-46b6-92b9-dafdd24a5291",
+          "name": "Michael Brosnan"
+        }
+      ]
+    },
+    {
+      "id": "lol",
+      "shortName": "LOL",
+      "name": "LEAP of Legends",
+      "members": [
+        {
+          "id": "member-4992aa24-50cd-4de8-854f-88e845537282",
+          "name": "Ethan Ma"
+        },
+        {
+          "id": "member-1fd6a682-89af-499a-ada3-362a817ea2c5",
+          "name": "Jennifer Ruiz"
+        },
+        {
+          "id": "member-3a2a4239-1cea-4291-90be-071be1f2cfff",
+          "name": "Toan (Thai) Nguyen"
+        },
+        {
+          "id": "member-c435056b-2a70-4361-9bde-4218552f0bf2",
+          "name": "Yatin Vaija"
+        },
+        {
+          "id": "member-0eb7b7d8-736a-49e3-a794-b4bcbc878092",
+          "name": "Zachary Disher"
+        }
+      ]
+    },
+    {
+      "id": "aol",
+      "shortName": "AOL",
+      "name": "Agents of LEAP",
+      "members": [
+        {
+          "id": "member-00daebee-e20a-4d6b-a8d5-caa5de67b0bc",
+          "name": "Ahmed Elghazi"
+        },
+        {
+          "id": "member-c89cd499-b6a0-489b-a397-b7230ac6b9dc",
+          "name": "Haley Cohen"
+        },
+        {
+          "id": "member-7f8317ce-af4f-4fd5-a999-ef011b99dd25",
+          "name": "Sanjana Kotha"
+        },
+        {
+          "id": "member-70551888-5890-41b3-9e77-9055d3393d56",
+          "name": "Sarah Tesfay"
+        },
+        {
+          "id": "member-bb0e86c4-7fdd-4b2e-b20c-f62c5e0a63ff",
+          "name": "Teliyah Wynder"
+        }
+      ]
+    },
+    {
+      "id": "cad",
+      "shortName": "CAD",
+      "name": "Ctrl Alt DeLEAP",
+      "members": [
+        {
+          "id": "member-69118842-c56f-4e06-8775-91f1787e3449",
+          "name": "Andrew Adams"
+        },
+        {
+          "id": "member-87376b50-9dd4-486f-a9ad-e08807440e7a",
+          "name": "Celina Shrestha"
+        },
+        {
+          "id": "member-cd3c23c1-2d8c-417b-92a8-0044381a55ef",
+          "name": "Kevin Phong"
+        },
+        {
+          "id": "member-8f6ed7e7-b10a-4976-af1c-b1069e5bd480",
+          "name": "Nathan Lee"
+        },
+        {
+          "id": "member-9e846a5c-af9d-4f33-9f85-1c821408e7e8",
+          "name": "Nazin Nazeri"
+        }
+      ]
+    }
+  ]
+}
