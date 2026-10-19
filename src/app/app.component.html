@@ -40,6 +40,9 @@
         </span>
         <span class="export-indicator" [class.export-needed]="configDirty" [attr.aria-label]="configDirty ? 'Team configuration needs export' : 'Team configuration export is current'">Config: {{ configDirty ? 'export needed' : 'current' }}</span>
         <span class="export-indicator" [class.export-needed]="resultsDirty" [attr.aria-label]="resultsDirty ? 'Project Checklist results need export' : 'Project Checklist results export is current'">Results: {{ resultsDirty ? 'export needed' : 'current' }}</span>
+        <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-label]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'" [attr.aria-pressed]="theme === 'dark'" [attr.title]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">
+          <span aria-hidden="true">◐</span><span>{{ theme === 'dark' ? 'Light' : 'Dark' }}</span>
+        </button>
         <div class="action-divider" aria-hidden="true"></div>
         <button class="text-button" type="button" (click)="exportBackup()" aria-label="Download JSON backup">
           <span aria-hidden="true">↓</span> Export
@@ -235,7 +238,7 @@
         }
       </div>
 
-      <footer class="page-footer"><span>LEAP RUN 02 <span>·</span> TEAM PROJECT REVIEW</span><span>Ratings are stored locally in this browser.</span></footer>
+      <footer class="page-footer"><span>LEAP RUN 02 <span>·</span> TEAM PROJECT REVIEW</span><span>Ratings are stored locally in this browser.</span><span>Version {{ appVersion }} · © {{ copyrightYear }} LEAP Project Review</span></footer>
     </div>
   </main>
 </div>

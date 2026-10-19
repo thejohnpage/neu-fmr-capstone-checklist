@@ -1,4 +1,5 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import packageInfo from '../../package.json';
 import { ReviewMember, ReviewSection, ReviewTeam, RatingValue, RATING_OPTIONS, SECTIONS, TEAMS } from './checklist-data';
 
 interface ReviewBackup {
@@ -39,6 +40,8 @@ type SaveState = 'saved' | 'saving' | 'error';
   templateUrl: './app.component.html'
 })
 export class AppComponent {
+  readonly appVersion = packageInfo.version;
+  readonly copyrightYear = new Date().getFullYear();
   teams: ReviewTeam[] = TEAMS.map((team) => ({ ...team, members: [...team.members] }));
   readonly sections = SECTIONS;
   readonly options = RATING_OPTIONS;
@@ -46,6 +49,8 @@ export class AppComponent {
   readonly storageKey = 'leap-review-ratings-v1';
   readonly teamStorageKey = 'leap-review-teams-v1';
   readonly dirtyStateStorageKey = 'leap-review-dirty-state-v1';
+  readonly themeStorageKey = 'leap-review-theme-v1';
+  theme: 'light' | 'dark' = 'light';
   ratings: Partial<Record<string, RatingValue>> = {};
   saveState: SaveState = 'saved';
   saveMessage = 'Saved on this device';
@@ -72,9 +77,20 @@ export class AppComponent {
   @ViewChild('teamEditorDialog') private teamEditorDialog?: ElementRef<HTMLElement>;
 
   constructor() {
+    this.loadTheme();
     this.loadSavedTeams();
     this.loadSavedRatings();
     this.loadDirtyState();
+  }
+
+  toggleTheme(): void {
+    this.theme = this.theme === 'light' ? 'dark' : 'light';
+    document.documentElement.dataset['theme'] = this.theme;
+    try {
+      localStorage.setItem(this.themeStorageKey, this.theme);
+    } catch {
+      return;
+    }
   }
 
   get totalRatings(): number {
@@ -459,6 +475,16 @@ export class AppComponent {
     this.markResultsDirty();
     this.persistRatings('Ratings cleared and saved on this device');
     this.selectedFileName = '';
+  }
+
+  private loadTheme(): void {
+    try {
+      const stored = localStorage.getItem(this.themeStorageKey);
+      this.theme = stored === 'dark' ? 'dark' : 'light';
+    } catch {
+      this.theme = 'light';
+    }
+    document.documentElement.dataset['theme'] = this.theme;
   }
 
   private loadSavedTeams(): void {

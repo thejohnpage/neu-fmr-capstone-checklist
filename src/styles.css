@@ -16,6 +16,15 @@
   --mint-dark: #b0d779;
   --amber: #d08c37;
   --red: #b54845;
+  --surface-raised: #fbfcf9;
+  --surface-soft: #f6f8f4;
+  --surface-accent: #edf2e9;
+  --text-strong: #263c31;
+  --text-muted: #738078;
+  --text-faint: #89968c;
+  --input-surface: #ffffff;
+  --hover-surface: #f4f8f1;
+  --border: #dfe7dc;
   --shadow: 0 18px 48px rgba(28, 45, 37, 0.055);
   font-family: 'DM Sans', sans-serif;
   font-synthesis: none;
@@ -384,4 +393,111 @@ h1 em { color: #738d5b; font-weight: 400; }
   .rating-select { display: none !important; }
   .print-rating { display: inline; color: #344936; font-size: 9px; font-weight: 600; }
   .matrix-row, .matrix-header, .section-heading, .page-footer { break-inside: avoid; }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: #e6eee7;
+  --ink-soft: #c2d0c5;
+  --muted: #a4b4a9;
+  --line: #3b4c41;
+  --line-soft: #2c3b32;
+  --paper: #111b16;
+  --surface: #19251f;
+  --forest: #0d1712;
+  --forest-mid: #294d40;
+  --mint: #c8e8a0;
+  --mint-dark: #b0d779;
+  --amber: #e4b66f;
+  --red: #ff9e92;
+  --surface-raised: #1d2a23;
+  --surface-soft: #202f26;
+  --surface-accent: #223329;
+  --text-strong: #dce8dd;
+  --text-muted: #b0beb3;
+  --text-faint: #99aa9e;
+  --input-surface: #142019;
+  --hover-surface: #2b3b30;
+  --border: #3b4c41;
+  --shadow: 0 18px 48px rgba(0, 0, 0, .22);
+}
+
+:root[data-theme='dark'] .topbar { border-color: var(--line); background: rgba(17, 27, 22, .96); }
+:root[data-theme='dark'] :is(.team-key, .review-section, .startup-modal, .team-editor-modal, .startup-file-option) { border-color: var(--border); background: var(--surface); }
+:root[data-theme='dark'] :is(.overall-section, .section-rating-row, .team-editor-roster, .member-form, .startup-order-note) { border-color: var(--border); background: var(--surface-accent); }
+:root[data-theme='dark'] :is(.settings-secondary-button, .settings-text-button, .team-editor-close, .reset-button, .team-editor-fields input, .member-form input, .rating-select) { border-color: var(--border); background-color: var(--input-surface); color: var(--ink); }
+:root[data-theme='dark'] :is(.rating-select.has-rating) { border-color: #59764c; background-color: #26382b; color: #d8edc3; }
+:root[data-theme='dark'] :is(.rating-select.rating-critical) { border-color: #83584f; background-color: #392824; color: #ffb4a9; }
+:root[data-theme='dark'] :is(.team-key, .team-settings, .managed-team-list, .managed-team, .team-config-actions, .team-editor-heading, .team-editor-actions, .team-editor-member-list, .team-editor-member-list li, .startup-modal-actions, .team-settings-content, .matrix-header, .matrix-row, .section-rating-row) { border-color: var(--line); }
+:root[data-theme='dark'] :is(.team-settings > summary, .team-settings-heading h2, .managed-team strong, .team-config-actions strong, .team-editor-roster-heading h3, .team-editor-member-list li, .team-editor-fields label, .member-form label, .startup-file-option h3, .startup-order-note strong, .startup-modal h2, .team-editor-heading h2, .overall-heading h2, .section-heading h2, .criterion-name, .matrix-team-heading > span, .team-abbreviation, .stat-number, .section-completion, .breadcrumb strong) { color: var(--text-strong); }
+:root[data-theme='dark'] :is(.breadcrumb, .intro-copy > p, .save-indicator, .team-key-heading, .team-full-name, .team-settings > summary span, .team-settings-heading p, .managed-team-top > div:first-child span, .managed-member-list li, .team-config-actions span, .rating-key, .key-choice, .overall-heading p, .matrix-team-heading small, .criterion-index, .section-completion small, .completion-total, .page-footer, .startup-modal > p, .startup-file-option p, .startup-modal-actions > span, .team-editor-heading p, .team-editor-roster-heading p, .team-editor-member-list .empty-member-list) { color: var(--text-muted); }
+:root[data-theme='dark'] :is(.eyebrow, .section-kicker, .team-key-count, .nav-link-copy, .text-button, .stat-label, .team-abbreviation, .section-number) { color: #b5ce9b; }
+:root[data-theme='dark'] .export-indicator { color: #b9d99c; }
+:root[data-theme='dark'] .export-indicator.export-needed,
+:root[data-theme='dark'] .team-form-error,
+:root[data-theme='dark'] .settings-delete-button,
+:root[data-theme='dark'] .save-indicator.save-error { color: #ff9e92; }
+:root[data-theme='dark'] :is(.team-key-rule, .eyebrow-separator, .section-kicker span, .team-settings > summary span, .startup-eyebrow span) { color: var(--text-faint); }
+:root[data-theme='dark'] .team-key-rule { background: var(--line); }
+:root[data-theme='dark'] .team-settings > summary,
+:root[data-theme='dark'] .team-config-actions,
+:root[data-theme='dark'] .team-editor-heading,
+:root[data-theme='dark'] .team-editor-actions,
+:root[data-theme='dark'] .startup-modal-actions { border-color: var(--line); }
+:root[data-theme='dark'] .settings-secondary-button:hover,
+:root[data-theme='dark'] .settings-text-button:hover,
+:root[data-theme='dark'] .reset-button:hover { border-color: #71866e; background: var(--hover-surface); color: var(--ink); }
+:root[data-theme='dark'] .settings-primary-button { border-color: #496b41; background: #496b41; color: #f4f8f1; }
+:root[data-theme='dark'] .settings-primary-button:hover { border-color: #5d8052; background: #5d8052; }
+:root[data-theme='dark'] .team-form-error { color: #ff9e92; }
+:root[data-theme='dark'] .startup-order-note { border-left-color: #9dbd78; }
+:root[data-theme='dark'] .startup-import-message { color: #c9e7b1 !important; }
+:root[data-theme='dark'] .priority-tag { border-color: var(--line); color: var(--text-muted); }
+:root[data-theme='dark'] .priority-tag.priority-must { border-color: #765a36; background: #352d21; color: #eac18b; }
+:root[data-theme='dark'] .priority-tag.priority-should { border-color: #4c6748; background: #26372a; color: #b9d99c; }
+:root[data-theme='dark'] .critical-tag, :root[data-theme='dark'] .critical-inline { border-color: #806747; color: #e4bd86; }
+:root[data-theme='dark'] .section-rating-row .criterion-name { color: #dce8dd; }
+:root[data-theme='dark'] .mobile-team-name { color: #dce8dd; }
+:root[data-theme='dark'] .mobile-team-name > span { color: var(--text-muted); }
+:root[data-theme='dark'] .team-editor-fields input:focus-visible,
+:root[data-theme='dark'] .member-form input:focus-visible,
+:root[data-theme='dark'] button:focus-visible,
+:root[data-theme='dark'] a:focus-visible,
+:root[data-theme='dark'] select:focus-visible,
+:root[data-theme='dark'] input:focus-visible,
+:root[data-theme='dark'] summary:focus-visible { outline-color: #b6dc82; }
+
+.theme-toggle { display: inline-flex; min-height: 34px; align-items: center; justify-content: center; gap: 6px; padding: 0 9px; border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.theme-toggle > span:first-child { color: #63834e; font-size: 16px; }
+.theme-toggle:hover { border-color: #8ba27b; background: var(--hover-surface); }
+:root[data-theme='dark'] .theme-toggle > span:first-child { color: #c8e8a0; }
+
+.review-label, .nav-number, .nav-link-copy small, .sidebar-progress > small, .sidebar-note, .breadcrumb, .save-indicator, .export-indicator, .text-button, .reset-button, .eyebrow, .stat-label, .team-key-heading, .team-key-count, .team-index, .team-abbreviation, .team-full-name, .team-settings > summary, .team-settings > summary span, .team-settings-heading p, .managed-team strong, .managed-team-top > div:first-child span, .managed-member-list li, .managed-member-list .empty-member-list, .member-form label, .settings-primary-button, .settings-secondary-button, .settings-text-button, .team-form-error, .team-config-actions strong, .team-config-actions span, .key-title, .key-choice, .section-kicker, .matrix-label, .matrix-team-heading > span, .matrix-team-heading small, .criterion-index, .criterion-name, .priority-tag, .section-completion small, .completion-total, .critical-tag, .critical-inline, .page-footer, .startup-eyebrow, .startup-modal > p, .startup-file-option h3, .startup-file-option p, .startup-modal-actions > span, .team-editor-heading p, .team-editor-fields label, .team-editor-roster-heading h3, .team-editor-roster-heading p, .team-editor-member-list li, .team-editor-member-list .empty-member-list { font-size: 12px; }
+.nav-link-copy, .overall-row .criterion-name, .mobile-team-name, .mobile-team-name > span, .rating-select, .review-section .rating-select, .overall-row .rating-select { font-size: 12px; }
+
+@media print {
+  :root[data-theme='dark'] {
+    color-scheme: light;
+    --ink: #182925;
+    --ink-soft: #4f5e58;
+    --muted: #78847d;
+    --line: #dce2dc;
+    --line-soft: #e9ede8;
+    --paper: #ffffff;
+    --surface: #ffffff;
+    --forest: #18352e;
+    --mint: #c8e8a0;
+    --amber: #d08c37;
+    --red: #b54845;
+    --surface-raised: #fbfcf9;
+    --surface-soft: #f6f8f4;
+    --surface-accent: #edf2e9;
+    --text-strong: #263c31;
+    --text-muted: #738078;
+    --text-faint: #89968c;
+    --input-surface: #ffffff;
+    --hover-surface: #f4f8f1;
+    --border: #dfe7dc;
+    --shadow: none;
+  }
 }
