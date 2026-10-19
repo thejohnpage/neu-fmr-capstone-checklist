@@ -1,1 +1,0 @@
-JSON.stringify({sections:[...document.querySelectorAll('[role=region],section')].map(s=,selects:document.querySelectorAll('select').length,w:innerWidth,overflowX:document.documentElement.scrollWidth,status:[...document.querySelectorAll('[role=status],[aria-live]')].map(e=,ls:Object.keys(localStorage)}) 
