@@ -430,8 +430,7 @@ export class AppComponent {
     this.setStatus('saving', 'Checking backup…');
     try {
       const parsed: unknown = JSON.parse(await file.text());
-      const importedRatings = this.validateBackup(parsed);
-      this.ratings = importedRatings;
+      this.ratings = this.validateBackup(parsed);
       this.persistRatings('Backup restored and saved on this device');
       this.markResultsClean();
       this.startupImportMessage = 'Project Checklist results loaded for the active team configuration.';

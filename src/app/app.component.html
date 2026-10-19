@@ -65,7 +65,7 @@
         </div>
       </section>
 
-      <section class="team-key" aria-labelledby="team-key-title" [style.--team-count]="teams.length">
+      <section class="team-key" aria-labelledby="team-key-title" [attr.style]="'--team-count: ' + teams.length">
         <div class="team-key-heading">
           <span id="team-key-title">Reviewing teams</span>
           <span class="team-key-rule"></span>
@@ -143,7 +143,7 @@
           </div>
           <span class="critical-tag">CRITICAL</span>
         </div>
-        <div class="rating-matrix overall-matrix" role="group" aria-label="Overall team ratings" [style.--team-count]="teams.length">
+        <div class="rating-matrix overall-matrix" role="group" aria-label="Overall team ratings" [attr.style]="'--team-count: ' + teams.length">
           <div class="matrix-header">
             <div class="matrix-label">TEAM</div>
             @for (team of teams; track team.id) {
@@ -184,7 +184,7 @@
               </div>
             </div>
 
-            <div class="rating-matrix" role="group" [attr.aria-label]="section.title + ' ratings by team'" [style.--team-count]="teams.length">
+            <div class="rating-matrix" role="group" [attr.aria-label]="section.title + ' ratings by team'" [attr.style]="'--team-count: ' + teams.length">
               <div class="matrix-header">
                 <div class="matrix-label">EVALUATION ITEM <span>/ PRIORITY</span></div>
                 @for (team of teams; track team.id) {
