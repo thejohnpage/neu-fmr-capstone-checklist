@@ -9,14 +9,14 @@ This is a standalone Angular application for reviewing team results. `.\src\main
 Use Node.js and npm. Run `npm ci` to install the lockfile-defined dependencies.
 
 - `npm start` — serve the app locally with Angular's development server.
-- `npm run build` — create the production build in `dist/leap-review-ratings`.
+- `npm run build` — create the production build in `.\dist\leap-review-ratings`.
 - `npm run watch` — continuously build with the development configuration.
 
-`package.json` does not define a test or lint script, and no test files or test framework configuration are present.
+`.\package.json` does not define a test or lint script, and no test files or test framework configuration are present.
 
 ## Coding Style & Naming Conventions
 
-The project uses Angular 21 and TypeScript 5.9. Follow the existing standalone-component pattern and keep checklist/domain data in `src/app/checklist-data.ts` rather than duplicating it in the template. TypeScript is configured with `strict`, and Angular template checking is strict; preserve those checks when changing application code. No linter or formatter configuration is present.
+The project uses Angular 21 and TypeScript 5.9. Follow the existing standalone-component pattern and keep checklist/domain data in `.\src\app\checklist-data.ts` rather than duplicating it in the template. TypeScript is configured with `strict`, and Angular template checking is strict; preserve those checks when changing application code. No linter or formatter configuration is present.
 
 ## Commit & Pull Request Guidelines
 
