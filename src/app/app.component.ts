@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, Inject, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, Inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -122,7 +122,10 @@ export class AppComponent {
   @ViewChild('teamMemberNameInput') private teamMemberNameInput?: ElementRef<HTMLInputElement>;
   @ViewChild('teamEditorDialog') private teamEditorDialog?: ElementRef<HTMLElement>;
 
-  constructor(private readonly dialog: MatDialog) {
+  constructor(
+    private readonly dialog: MatDialog,
+    private readonly changeDetectorRef: ChangeDetectorRef
+  ) {
     this.loadTheme();
     this.loadSavedTeams();
     this.loadSavedRatings();
@@ -137,6 +140,26 @@ export class AppComponent {
     } catch {
       return;
     }
+  }
+
+  expandedSections: Record<string, boolean> = {};
+
+  get allSectionsExpanded(): boolean {
+    return this.sections.length > 0 && this.sections.every((section) => this.isSectionExpanded(section.id));
+  }
+
+  isSectionExpanded(sectionId: string): boolean {
+    return this.expandedSections[sectionId] ?? false;
+  }
+
+  toggleSection(sectionId: string, event: MouseEvent): void {
+    event.preventDefault();
+    this.expandedSections = { ...this.expandedSections, [sectionId]: !this.isSectionExpanded(sectionId) };
+  }
+
+  toggleAllSections(): void {
+    const expanded = !this.allSectionsExpanded;
+    this.expandedSections = Object.fromEntries(this.sections.map((section) => [section.id, expanded]));
   }
 
   get totalRatings(): number {
@@ -373,6 +396,7 @@ export class AppComponent {
     const ratingsSaved = teamRatings.length === 0 || this.persistRatings('Team and its ratings deleted');
     const teamsSaved = this.persistTeams('Team deleted');
     if (!ratingsSaved || !teamsSaved) this.setStatus('error', 'The team was removed, but some changes could not be saved to browser storage');
+    this.changeDetectorRef.markForCheck();
   }
 
   async exportTeamConfig(): Promise<void> {
@@ -433,6 +457,7 @@ export class AppComponent {
       this.setStatus('error', message);
     } finally {
       input.value = '';
+      this.changeDetectorRef.markForCheck();
     }
   }
 
@@ -454,8 +479,10 @@ export class AppComponent {
     )) return;
 
     for (const item of ratedItems) delete this.ratings[this.ratingKey(`item:${item.id}`, team.id)];
+    this.ratings = { ...this.ratings };
     this.markResultsDirty();
     this.persistRatings(`${section.title} ratings cleared for ${team.name}`);
+    this.changeDetectorRef.markForCheck();
   }
 
   sectionRating(section: ReviewSection, teamId: string): SectionRatingSummary {
@@ -630,6 +657,7 @@ export class AppComponent {
     this.markResultsDirty();
     this.persistRatings('Ratings cleared and saved on this device');
     this.selectedFileName = '';
+    this.changeDetectorRef.markForCheck();
   }
 
   private confirmAction(title: string, message: string, confirmLabel: string): Promise<boolean> {

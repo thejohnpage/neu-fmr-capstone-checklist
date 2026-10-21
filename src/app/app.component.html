@@ -63,6 +63,7 @@
         <div class="intro-copy">
           <div class="eyebrow"><span class="eyebrow-line"></span> TEAM EVALUATION <span class="eyebrow-separator">/</span> 2026</div>
           <h1 id="page-title">Project <em>checklist</em></h1>
+          <span class="intro-version">Version {{ appVersion }}</span>
           <p>Capture every team's review in one place. Choose a rating for each criterion, then add a section and overall assessment.</p>
         </div>
         <div class="intro-stat" [attr.aria-label]="teams.length + ' reviewing teams'">
@@ -179,10 +180,13 @@
         </div>
       </section>
 
+      <div class="section-list-controls">
+        <button mat-stroked-button type="button" (click)="toggleAllSections()" [attr.aria-pressed]="allSectionsExpanded">{{ allSectionsExpanded ? 'Collapse all' : 'Expand all' }}</button>
+      </div>
       <div class="section-list">
         @for (section of sections; track section.id; let index = $index) {
-          <section class="review-section" [id]="section.id" [attr.aria-labelledby]="section.id + '-title'">
-            <div class="section-heading">
+          <details class="review-section" [id]="section.id" [attr.aria-labelledby]="section.id + '-title'" [open]="isSectionExpanded(section.id)">
+            <summary class="section-heading" (click)="toggleSection(section.id, $event)">
               <div class="section-title-group">
                 <span class="section-number">0{{ index + 1 }}</span>
                 <div>
@@ -194,7 +198,7 @@
                 <span>{{ sectionCompleted(section) }} <span class="completion-total">/ {{ section.items.length * teams.length }}</span></span>
                 <small>RATINGS</small>
               </div>
-            </div>
+            </summary>
 
             <div class="rating-matrix" role="group" [attr.aria-label]="section.title + ' ratings by team'" [attr.style]="'--team-count: ' + teams.length">
               <div class="matrix-header">
@@ -246,7 +250,7 @@
                 </div>
               </div>
             </div>
-          </section>
+          </details>
         }
       </div>
 
