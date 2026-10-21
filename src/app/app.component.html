@@ -13,9 +13,9 @@
           <span class="nav-number">0{{ index + 1 }}</span>
           <span class="nav-link-copy">
             <span>{{ section.title }}</span>
-            <small>{{ sectionCompleted(section) }} / {{ (section.items.length + 1) * teams.length }} rated</small>
+            <small>{{ sectionCompleted(section) }} / {{ section.items.length * teams.length }} rated</small>
           </span>
-          <span class="nav-dot" [class.complete]="sectionCompleted(section) === (section.items.length + 1) * teams.length" aria-hidden="true"></span>
+          <span class="nav-dot" [class.complete]="sectionCompleted(section) === section.items.length * teams.length" aria-hidden="true"></span>
         </a>
       }
     </nav>
@@ -186,7 +186,7 @@
                 </div>
               </div>
               <div class="section-completion">
-                <span>{{ sectionCompleted(section) }} <span class="completion-total">/ {{ (section.items.length + 1) * teams.length }}</span></span>
+                <span>{{ sectionCompleted(section) }} <span class="completion-total">/ {{ section.items.length * teams.length }}</span></span>
                 <small>RATINGS</small>
               </div>
             </div>
@@ -202,7 +202,7 @@
                 <div class="matrix-row">
                   <div class="criterion">
                     <span class="criterion-index">{{ (itemIndex + 1).toString().padStart(2, '0') }}</span>
-                    <span class="criterion-copy"><span class="criterion-name">{{ item.description }}</span><span class="priority-tag" [class.priority-must]="item.priority === 'Must'" [class.priority-should]="item.priority === 'Should'">{{ item.priority }}</span></span>
+                    <span class="criterion-copy"><span class="criterion-name">{{ item.description }}</span><span class="priority-tag" [class.priority-must]="item.priority === 'Must'" [class.priority-should]="item.priority === 'Should'" [class.priority-opt]="item.priority === 'Opt'">{{ item.priority }}</span></span>
                   </div>
                   <div class="rating-cells">
                     @for (team of teams; track team.id) {
@@ -219,16 +219,21 @@
                 </div>
               }
               <div class="matrix-row section-rating-row">
-                <div class="criterion"><span class="criterion-index">Σ</span><span class="criterion-name">Section rating <span class="critical-inline">CRITICAL</span></span></div>
+                <div class="criterion"><span class="criterion-index">Σ</span><span class="criterion-name">Calculated section rating</span></div>
                 <div class="rating-cells">
                   @for (team of teams; track team.id) {
-                    <div class="team-rating">
+                    @let summary = sectionRating(section, team.id);
+                    <div class="team-rating section-rating-cell">
                       <span class="mobile-team-name">{{ team.shortName }} <span>{{ team.name }}</span></span>
-                      <label class="visually-hidden" [for]="'rating-section-' + section.id + '-' + team.id">{{ section.title }} section rating — {{ team.name }}</label>
-                      <select class="rating-select" [class.has-rating]="ratingFor('section:' + section.id, team.id) !== ''" [class.rating-critical]="ratingFor('section:' + section.id, team.id) === 'no' || ratingFor('section:' + section.id, team.id) === 'football'" [id]="'rating-section-' + section.id + '-' + team.id" [value]="ratingFor('section:' + section.id, team.id)" (change)="updateRating('section:' + section.id, team.id, $event)">
-                        @for (option of options; track option.value) { <option [value]="option.value">{{ option.display }} {{ option.label }}</option> }
-                      </select>
-                      <span class="print-rating">{{ ratingPrintValue('section:' + section.id, team.id) }}</span>
+                      <span class="section-rating-value" role="img" [class.rating-critical]="summary.isCritical" [class.rating-warning]="summary.isWarning" [attr.aria-label]="team.name + ': ' + summary.label" [title]="summary.label">{{ summary.display }}</span>
+                      @if (summary.scoreLabel) {
+                        <small class="section-rating-meta">Average: {{ summary.scoreLabel }} / 5</small>
+                      }
+                      <small class="section-rating-meta">{{ summary.ratedRequiredCount }} / {{ summary.requiredCount }} Must/Should rated</small>
+                      @if (summary.optionalCount > 0) {
+                        <small class="section-rating-meta">Opt unmet: {{ summary.unmetOptionalCount }} / {{ summary.optionalCount }}</small>
+                      }
+                      <span class="print-rating">{{ summary.printValue }}</span>
                     </div>
                   }
                 </div>

@@ -202,9 +202,14 @@ h1 em { color: #738d5b; font-weight: 400; }
 .priority-tag { flex: 0 0 auto; padding: 3px 5px; border: 1px solid #e0e5df; color: #7c877f; font-size: 8px; font-weight: 600; line-height: 1; }
 .priority-tag.priority-must { border-color: #e9d8bf; background: #fcf8f1; color: #a8793d; }
 .priority-tag.priority-should { border-color: #d7e4d5; background: #f5f9f2; color: #64815a; }
+.priority-tag.priority-opt { border-color: #dce2dc; background: #f7f8f6; color: #78847d; }
 .section-rating-row { min-height: 59px !important; border-top: 1px solid #dfe7db; background: #f5f8f2; }
 .section-rating-row .criterion-name { color: #294536; font-weight: 700; }
-.critical-inline { display: inline-block; margin-left: 6px; padding: 3px 5px; border: 1px solid #d0ad7d; color: #9a6d35; font-size: 7px; font-weight: 700; letter-spacing: .08em; vertical-align: 1px; }
+.section-rating-cell { flex-direction: column; gap: 3px; }
+.section-rating-value { color: #344936; font-size: 15px; font-weight: 700; line-height: 1.2; }
+.section-rating-value.rating-critical { color: var(--red); }
+.section-rating-value.rating-warning { color: var(--amber); }
+.section-rating-meta { color: #87938a; font-size: 8px; font-weight: 500; }
 .page-footer { display: flex; justify-content: space-between; gap: 15px; padding: 22px 2px 5px; color: #87938a; font-size: 9px; }
 .page-footer > span:first-child { font-size: 8px; font-weight: 700; letter-spacing: .1em; }
 .page-footer > span:first-child span { color: #aaba9e; }
@@ -455,7 +460,8 @@ h1 em { color: #738d5b; font-weight: 400; }
 :root[data-theme='dark'] .priority-tag { border-color: var(--line); color: var(--text-muted); }
 :root[data-theme='dark'] .priority-tag.priority-must { border-color: #765a36; background: #352d21; color: #eac18b; }
 :root[data-theme='dark'] .priority-tag.priority-should { border-color: #4c6748; background: #26372a; color: #b9d99c; }
-:root[data-theme='dark'] .critical-tag, :root[data-theme='dark'] .critical-inline { border-color: #806747; color: #e4bd86; }
+:root[data-theme='dark'] .priority-tag.priority-opt { border-color: var(--line); background: var(--surface-soft); color: var(--text-muted); }
+:root[data-theme='dark'] .critical-tag { border-color: #806747; color: #e4bd86; }
 :root[data-theme='dark'] .section-rating-row .criterion-name { color: #dce8dd; }
 :root[data-theme='dark'] .mobile-team-name { color: #dce8dd; }
 :root[data-theme='dark'] .mobile-team-name > span { color: var(--text-muted); }
