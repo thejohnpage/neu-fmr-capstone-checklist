@@ -205,11 +205,14 @@ h1 em { color: #738d5b; font-weight: 400; }
 .priority-tag.priority-opt { border-color: #dce2dc; background: #f7f8f6; color: #78847d; }
 .section-rating-row { min-height: 59px !important; border-top: 1px solid #dfe7db; background: #f5f8f2; }
 .section-rating-row .criterion-name { color: #294536; font-weight: 700; }
-.section-rating-cell { flex-direction: column; gap: 3px; }
+.section-rating-cell, .overall-assessment-cell { flex-direction: column; gap: 3px; }
 .section-rating-value { color: #344936; font-size: 15px; font-weight: 700; line-height: 1.2; }
 .section-rating-value.rating-critical { color: var(--red); }
 .section-rating-value.rating-warning { color: var(--amber); }
 .section-rating-meta { color: #87938a; font-size: 8px; font-weight: 500; }
+.section-clear-button { padding: 3px 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-size: 8px; line-height: 1.2; }
+.section-clear-button:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+.section-clear-button:disabled { cursor: not-allowed; opacity: .45; }
 .page-footer { display: flex; justify-content: space-between; gap: 15px; padding: 22px 2px 5px; color: #87938a; font-size: 9px; }
 .page-footer > span:first-child { font-size: 8px; font-weight: 700; letter-spacing: .1em; }
 .page-footer > span:first-child span { color: #aaba9e; }
@@ -395,7 +398,7 @@ h1 em { color: #738d5b; font-weight: 400; }
   .matrix-header, .matrix-row, .review-section .matrix-header, .review-section .matrix-row { grid-template-columns: minmax(240px, 2fr) repeat(var(--team-count), minmax(88px, 1fr)); min-width: 0; }
   .matrix-team-heading small { overflow: visible; text-overflow: clip; white-space: normal; }
   .mobile-team-name { display: none !important; }
-  .rating-select { display: none !important; }
+  .rating-select, .section-clear-button { display: none !important; }
   .print-rating { display: inline; color: #344936; font-size: 9px; font-weight: 600; }
   .matrix-row, .matrix-header, .section-heading, .page-footer { break-inside: avoid; }
 }

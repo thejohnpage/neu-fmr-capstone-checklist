@@ -21,6 +21,7 @@ interface SectionRatingSummary {
   label: string;
   printValue: string;
   scoreLabel: string;
+  scoreTotal: number;
   isCritical: boolean;
   isWarning: boolean;
   ratedRequiredCount: number;
@@ -58,7 +59,6 @@ export class AppComponent {
   teams: ReviewTeam[] = TEAMS.map((team) => ({ ...team, members: [...team.members] }));
   readonly sections = SECTIONS;
   readonly options = RATING_OPTIONS;
-  readonly overallRowId = 'overall';
   readonly storageKey = 'leap-review-ratings-v1';
   readonly teamStorageKey = 'leap-review-teams-v1';
   readonly dirtyStateStorageKey = 'leap-review-dirty-state-v1';
@@ -107,7 +107,7 @@ export class AppComponent {
   }
 
   get totalRatings(): number {
-    return (1 + this.sections.reduce((total, section) => total + section.items.length, 0)) * this.teams.length;
+    return this.sections.reduce((total, section) => total + section.items.length, 0) * this.teams.length;
   }
 
   get completedRatings(): number {
@@ -403,6 +403,20 @@ export class AppComponent {
     return section.items.reduce((count, item) => count + this.teams.filter((team) => this.ratingFor(`item:${item.id}`, team.id) !== '').length, 0);
   }
 
+  sectionTeamCompleted(section: ReviewSection, teamId: string): number {
+    return section.items.filter((item) => this.ratingFor(`item:${item.id}`, teamId) !== '').length;
+  }
+
+  clearSectionRatings(section: ReviewSection, team: ReviewTeam): void {
+    const ratedItems = section.items.filter((item) => this.ratingFor(`item:${item.id}`, team.id) !== '');
+    if (ratedItems.length === 0) return;
+    if (!window.confirm(`Clear all ${ratedItems.length} ratings for ${team.name} in ${section.title}?`)) return;
+
+    for (const item of ratedItems) delete this.ratings[this.ratingKey(`item:${item.id}`, team.id)];
+    this.markResultsDirty();
+    this.persistRatings(`${section.title} ratings cleared for ${team.name}`);
+  }
+
   sectionRating(section: ReviewSection, teamId: string): SectionRatingSummary {
     const mustItems = section.items.filter((item) => item.priority === 'Must');
     const shouldItems = section.items.filter((item) => item.priority === 'Should');
@@ -415,11 +429,12 @@ export class AppComponent {
     const requiredItems = [...mustItems, ...shouldItems];
     const requiredRatings = requiredItems.map((item) => this.ratingFor(`item:${item.id}`, teamId));
     const ratedRequiredCount = requiredRatings.filter((rating) => rating !== '').length;
-    const summary = (display: string, label: string, isCritical = false, isWarning = false, scoreLabel = ''): SectionRatingSummary => ({
+    const summary = (display: string, label: string, isCritical = false, isWarning = false, scoreLabel = '', scoreTotal = 0): SectionRatingSummary => ({
       display,
       label,
       printValue: `${display} ${label} · Must/Should rated: ${ratedRequiredCount} / ${requiredItems.length}${optionalItems.length > 0 ? ` · Opt unmet: ${unmetOptionalCount} / ${optionalItems.length}` : ''}`,
       scoreLabel,
+      scoreTotal,
       isCritical,
       isWarning,
       ratedRequiredCount,
@@ -442,7 +457,48 @@ export class AppComponent {
     const label = isProvisional
       ? `Provisional — ${roundedRating} stars (average ${average.toFixed(1)}; ${completion})`
       : `Meets criteria — ${roundedRating} stars (average ${average.toFixed(1)})`;
-    return summary('⭐'.repeat(roundedRating), label, false, false, average.toFixed(1));
+    const scoreTotal = scoredRatings.reduce((total, rating) => total + rating, 0);
+    return summary('⭐'.repeat(roundedRating), label, false, false, average.toFixed(1), scoreTotal);
+  }
+
+  overallRating(teamId: string): SectionRatingSummary {
+    const sectionRatings = this.sections.map((section) => this.sectionRating(section, teamId));
+    const requiredCount = sectionRatings.reduce((total, rating) => total + rating.requiredCount, 0);
+    const ratedRequiredCount = sectionRatings.reduce((total, rating) => total + rating.ratedRequiredCount, 0);
+    const unmetOptionalCount = sectionRatings.reduce((total, rating) => total + rating.unmetOptionalCount, 0);
+    const optionalCount = sectionRatings.reduce((total, rating) => total + rating.optionalCount, 0);
+    const summary = (display: string, label: string, isCritical = false, isWarning = false, scoreLabel = '', scoreTotal = 0): SectionRatingSummary => ({
+      display,
+      label,
+      printValue: `${display} ${label} · Must/Should rated: ${ratedRequiredCount} / ${requiredCount} · Opt unmet: ${unmetOptionalCount} / ${optionalCount}`,
+      scoreLabel,
+      scoreTotal,
+      isCritical,
+      isWarning,
+      ratedRequiredCount,
+      requiredCount,
+      unmetOptionalCount,
+      optionalCount
+    });
+
+    if (sectionRatings.some((rating) => rating.isCritical)) return summary('❌', 'Does not meet a Must criterion', true);
+    if (sectionRatings.some((rating) => rating.isWarning)) return summary('🏈', 'Does not meet a Should criterion', false, true);
+    if (sectionRatings.some((rating) => rating.display === '❓')) return summary('❓', 'Needs clarification');
+    if (sectionRatings.some((rating) => rating.display === '🔍')) return summary('🔍', 'Review further');
+
+    const scoredSectionRatings = sectionRatings.filter((rating) => rating.scoreLabel !== '');
+    const scoredCount = scoredSectionRatings.reduce((total, rating) => total + rating.ratedRequiredCount, 0);
+    if (scoredCount === 0) return summary('—', 'No Must or Should criteria rated');
+
+    const weightedTotal = scoredSectionRatings.reduce((total, rating) => total + rating.scoreTotal, 0);
+    const average = weightedTotal / scoredCount;
+    const roundedRating = Math.round(average);
+    const isProvisional = scoredCount < requiredCount;
+    const completion = `${scoredCount} / ${requiredCount} Must and Should criteria rated`;
+    const label = isProvisional
+      ? `Provisional — ${roundedRating} stars (average ${average.toFixed(1)}; ${completion})`
+      : `Meets criteria — ${roundedRating} stars (average ${average.toFixed(1)})`;
+    return summary('⭐'.repeat(roundedRating), label, false, false, average.toFixed(1), weightedTotal);
   }
 
   ratingFor(rowId: string, teamId: string): RatingValue {
@@ -769,10 +825,13 @@ export class AppComponent {
   private validateStoredRatings(value: unknown): Partial<Record<string, RatingValue>> {
     if (!this.isRecord(value)) throw new Error('The backup ratings data is missing or invalid.');
     const validKeys = new Set(this.allRatingKeys());
-    const legacySectionKeys = new Set(this.sections.flatMap((section) => this.teams.map((team) => this.ratingKey(`section:${section.id}`, team.id))));
+    const legacyCalculatedKeys = new Set([
+      ...this.teams.map((team) => this.ratingKey('overall', team.id)),
+      ...this.sections.flatMap((section) => this.teams.map((team) => this.ratingKey(`section:${section.id}`, team.id)))
+    ]);
     const restored: Partial<Record<string, RatingValue>> = {};
     for (const [key, rating] of Object.entries(value)) {
-      if (legacySectionKeys.has(key)) continue;
+      if (legacyCalculatedKeys.has(key)) continue;
       if (!validKeys.has(key) || !this.isRatingValue(rating) || rating === '') {
         throw new Error('The backup contains an unknown rating or checklist row.');
       }
@@ -782,7 +841,7 @@ export class AppComponent {
   }
 
   private allRatingKeys(): string[] {
-    const rows = [this.overallRowId, ...this.sections.flatMap((section) => section.items.map((item) => `item:${item.id}`))];
+    const rows = this.sections.flatMap((section) => section.items.map((item) => `item:${item.id}`));
     return rows.flatMap((rowId) => this.teams.map((team) => this.ratingKey(rowId, team.id)));
   }
 

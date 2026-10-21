@@ -145,7 +145,7 @@
           <div>
             <div class="section-kicker">FINAL ASSESSMENT <span>·</span> ALL TEAMS</div>
             <h2 id="overall-title">Overall rating</h2>
-            <p>One final assessment for each reviewing team.</p>
+            <p>Calculated automatically from each team’s Must and Should ratings.</p>
           </div>
           <span class="critical-tag">CRITICAL</span>
         </div>
@@ -160,13 +160,18 @@
             <div class="criterion"><span class="criterion-index">00</span><span class="criterion-name">Overall project assessment</span></div>
             <div class="rating-cells">
               @for (team of teams; track team.id) {
-                <div class="team-rating">
+                @let assessment = overallRating(team.id);
+                <div class="team-rating overall-assessment-cell">
                   <span class="mobile-team-name">{{ team.shortName }} <span>{{ team.name }}</span></span>
-                  <label class="visually-hidden" [for]="'rating-overall-' + team.id">Overall rating — {{ team.name }}</label>
-                  <select class="rating-select" [class.has-rating]="ratingFor(overallRowId, team.id) !== ''" [class.rating-critical]="ratingFor(overallRowId, team.id) === 'no' || ratingFor(overallRowId, team.id) === 'football'" [id]="'rating-overall-' + team.id" [value]="ratingFor(overallRowId, team.id)" (change)="updateRating(overallRowId, team.id, $event)">
-                    @for (option of options; track option.value) { <option [value]="option.value">{{ option.display }} {{ option.label }}</option> }
-                  </select>
-                  <span class="print-rating">{{ ratingPrintValue(overallRowId, team.id) }}</span>
+                  <span class="section-rating-value" role="img" [class.rating-critical]="assessment.isCritical" [class.rating-warning]="assessment.isWarning" [attr.aria-label]="team.name + ': ' + assessment.label" [title]="assessment.label">{{ assessment.display }}</span>
+                  @if (assessment.scoreLabel) {
+                    <small class="section-rating-meta">Average: {{ assessment.scoreLabel }} / 5</small>
+                  }
+                  <small class="section-rating-meta">{{ assessment.ratedRequiredCount }} / {{ assessment.requiredCount }} Must/Should rated</small>
+                  @if (assessment.optionalCount > 0) {
+                    <small class="section-rating-meta">Opt unmet: {{ assessment.unmetOptionalCount }} / {{ assessment.optionalCount }}</small>
+                  }
+                  <span class="print-rating">{{ assessment.printValue }}</span>
                 </div>
               }
             </div>
@@ -233,6 +238,7 @@
                       @if (summary.optionalCount > 0) {
                         <small class="section-rating-meta">Opt unmet: {{ summary.unmetOptionalCount }} / {{ summary.optionalCount }}</small>
                       }
+                      <button class="section-clear-button" type="button" [disabled]="sectionTeamCompleted(section, team.id) === 0" (click)="clearSectionRatings(section, team)" [attr.aria-label]="'Clear all ratings for ' + team.name + ' in ' + section.title" [title]="'Clear all ratings for ' + team.name + ' in ' + section.title">Clear all</button>
                       <span class="print-rating">{{ summary.printValue }}</span>
                     </div>
                   }
