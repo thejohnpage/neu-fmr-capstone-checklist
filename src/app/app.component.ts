@@ -1,4 +1,10 @@
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, Inject, ViewChild } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { firstValueFrom } from 'rxjs';
 import packageInfo from '../../package.json';
 import { ReviewMember, ReviewSection, ReviewTeam, RatingValue, RATING_OPTIONS, SECTIONS, TEAMS } from './checklist-data';
 
@@ -48,9 +54,36 @@ interface JsonFilePickerWindow extends Window {
 
 type SaveState = 'saved' | 'saving' | 'error';
 
+interface ConfirmationDialogData {
+  title: string;
+  message: string;
+  confirmLabel: string;
+}
+
+@Component({
+  selector: 'app-confirmation-dialog',
+  standalone: true,
+  imports: [MatButtonModule, MatDialogModule],
+  template: `
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+    <mat-dialog-content>{{ data.message }}</mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="dialogRef.close(false)">Cancel</button>
+      <button mat-flat-button type="button" (click)="dialogRef.close(true)">{{ data.confirmLabel }}</button>
+    </mat-dialog-actions>
+  `
+})
+class ConfirmationDialogComponent {
+  constructor(
+    @Inject(MAT_DIALOG_DATA) readonly data: ConfirmationDialogData,
+    readonly dialogRef: MatDialogRef<ConfirmationDialogComponent, boolean>
+  ) {}
+}
+
 @Component({
   selector: 'app-root',
   standalone: true,
+  imports: [MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   templateUrl: './app.component.html'
 })
 export class AppComponent {
@@ -89,7 +122,7 @@ export class AppComponent {
   @ViewChild('teamMemberNameInput') private teamMemberNameInput?: ElementRef<HTMLInputElement>;
   @ViewChild('teamEditorDialog') private teamEditorDialog?: ElementRef<HTMLElement>;
 
-  constructor() {
+  constructor(private readonly dialog: MatDialog) {
     this.loadTheme();
     this.loadSavedTeams();
     this.loadSavedRatings();
@@ -324,13 +357,13 @@ export class AppComponent {
     window.setTimeout(() => this.teamMemberNameInput?.nativeElement.focus());
   }
 
-  deleteTeam(team: ReviewTeam): void {
+  async deleteTeam(team: ReviewTeam): Promise<void> {
     if (this.teams.length <= 1) return;
     const teamRatings = Object.keys(this.ratings).filter((key) => key.endsWith(`:${team.id}`));
     const warning = teamRatings.length
       ? `Delete ${team.name} and its ${teamRatings.length} saved rating${teamRatings.length === 1 ? '' : 's'}? This cannot be undone unless you have exported a ratings backup.`
       : `Delete ${team.name}?`;
-    if (!window.confirm(warning)) return;
+    if (!await this.confirmAction('Delete team', warning, 'Delete')) return;
 
     this.teams = this.teams.filter((candidate) => candidate.id !== team.id);
     for (const key of teamRatings) delete this.ratings[key];
@@ -374,7 +407,11 @@ export class AppComponent {
       const importedIds = new Set(importedTeams.map((team) => team.id));
       const removedIds = this.teams.filter((team) => !importedIds.has(team.id)).map((team) => team.id);
       const orphanedRatings = Object.keys(this.ratings).filter((key) => removedIds.some((id) => key.endsWith(`:${id}`)));
-      if (orphanedRatings.length && !window.confirm(`This configuration removes ${removedIds.length} team${removedIds.length === 1 ? '' : 's'} with ${orphanedRatings.length} saved rating${orphanedRatings.length === 1 ? '' : 's'}. Those ratings will be deleted. Continue?`)) {
+      if (orphanedRatings.length && !await this.confirmAction(
+        'Remove saved ratings?',
+        `This configuration removes ${removedIds.length} team${removedIds.length === 1 ? '' : 's'} with ${orphanedRatings.length} saved rating${orphanedRatings.length === 1 ? '' : 's'}. Those ratings will be deleted. Continue?`,
+        'Import configuration'
+      )) {
         this.startupImportMessage = 'Team configuration import canceled; existing data was kept.';
         this.setStatus('saved', 'Team configuration import canceled');
         return;
@@ -407,10 +444,14 @@ export class AppComponent {
     return section.items.filter((item) => this.ratingFor(`item:${item.id}`, teamId) !== '').length;
   }
 
-  clearSectionRatings(section: ReviewSection, team: ReviewTeam): void {
+  async clearSectionRatings(section: ReviewSection, team: ReviewTeam): Promise<void> {
     const ratedItems = section.items.filter((item) => this.ratingFor(`item:${item.id}`, team.id) !== '');
     if (ratedItems.length === 0) return;
-    if (!window.confirm(`Clear all ${ratedItems.length} ratings for ${team.name} in ${section.title}?`)) return;
+    if (!await this.confirmAction(
+      'Clear section ratings',
+      `Clear all ${ratedItems.length} ratings for ${team.name} in ${section.title}?`,
+      'Clear ratings'
+    )) return;
 
     for (const item of ratedItems) delete this.ratings[this.ratingKey(`item:${item.id}`, team.id)];
     this.markResultsDirty();
@@ -524,8 +565,7 @@ export class AppComponent {
     return `${rowId}:${teamId}`;
   }
 
-  updateRating(rowId: string, teamId: string, event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
+  updateRating(rowId: string, teamId: string, value: unknown): void {
     if (!this.isRatingValue(value)) return;
 
     const key = this.ratingKey(rowId, teamId);
@@ -580,12 +620,27 @@ export class AppComponent {
     }
   }
 
-  resetRatings(): void {
-    if (!window.confirm(`Reset every rating for all ${this.teams.length} teams? This cannot be undone unless you have exported a backup.`)) return;
+  async resetRatings(): Promise<void> {
+    if (!await this.confirmAction(
+      'Reset all ratings',
+      `Reset every rating for all ${this.teams.length} teams? This cannot be undone unless you have exported a backup.`,
+      'Reset ratings'
+    )) return;
     this.ratings = {};
     this.markResultsDirty();
     this.persistRatings('Ratings cleared and saved on this device');
     this.selectedFileName = '';
+  }
+
+  private confirmAction(title: string, message: string, confirmLabel: string): Promise<boolean> {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: { title, message, confirmLabel },
+      width: 'min(440px, calc(100vw - 32px))',
+      panelClass: 'confirmation-dialog-panel',
+      autoFocus: 'first-tabbable',
+      restoreFocus: true
+    });
+    return firstValueFrom(dialogRef.afterClosed()).then((confirmed) => confirmed === true);
   }
 
   private loadTheme(): void {

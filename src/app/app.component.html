@@ -40,21 +40,21 @@
         </span>
         <span class="export-indicator" [class.export-needed]="configDirty" [attr.aria-label]="configDirty ? 'Team configuration needs export' : 'Team configuration export is current'">Config: {{ configDirty ? 'export needed' : 'current' }}</span>
         <span class="export-indicator" [class.export-needed]="resultsDirty" [attr.aria-label]="resultsDirty ? 'Project Checklist results need export' : 'Project Checklist results export is current'">Results: {{ resultsDirty ? 'export needed' : 'current' }}</span>
-        <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-label]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'" [attr.aria-pressed]="theme === 'dark'" [attr.title]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">
+        <button mat-button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-label]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'" [attr.aria-pressed]="theme === 'dark'" [attr.title]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">
           <span aria-hidden="true">◐</span><span>{{ theme === 'dark' ? 'Light' : 'Dark' }}</span>
         </button>
         <div class="action-divider" aria-hidden="true"></div>
-        <button class="text-button" type="button" (click)="exportBackup()" aria-label="Download JSON backup">
+        <button mat-button class="text-button" type="button" (click)="exportBackup()" aria-label="Download JSON backup">
           <span aria-hidden="true">↓</span> Export
         </button>
-        <button class="text-button" type="button" (click)="exportPdf()" aria-label="Save Project Checklist results as PDF" title="Choose Save to PDF in the print dialog">
+        <button mat-button class="text-button" type="button" (click)="exportPdf()" aria-label="Save Project Checklist results as PDF" title="Choose Save to PDF in the print dialog">
           <span aria-hidden="true">▤</span> PDF
         </button>
-        <button class="text-button import-button" type="button" (click)="backupFile.click()" aria-label="Import JSON backup">
+        <button mat-button class="text-button import-button" type="button" (click)="backupFile.click()" aria-label="Import JSON backup">
           <span aria-hidden="true">↑</span> Import
         </button>
         <input #backupFile id="backup-file" class="visually-hidden" type="file" accept="application/json,.json" (change)="importBackup($event)" aria-label="Choose a JSON backup file to import">
-        <button class="reset-button" type="button" (click)="resetRatings()">Reset ratings</button>
+        <button mat-stroked-button class="reset-button" type="button" (click)="resetRatings()">Reset ratings</button>
       </div>
     </header>
 
@@ -94,7 +94,7 @@
                 <h2>Reviewer team settings</h2>
                 <p>Manage team names and member rosters. Changes are saved in this browser; export the configuration to keep a JSON copy.</p>
               </div>
-              <button class="settings-primary-button" type="button" (click)="startAddTeam()">Add team</button>
+              <button mat-flat-button class="settings-primary-button" type="button" (click)="startAddTeam()">Add team</button>
             </div>
             <ul class="managed-team-list" aria-label="Configured reviewer teams">
               @for (team of teams; track team.id) {
@@ -102,8 +102,8 @@
                   <div class="managed-team-top">
                     <div><strong>{{ team.shortName }}</strong><span>{{ team.name }}</span></div>
                     <div class="managed-team-actions">
-                      <button class="settings-text-button" type="button" (click)="startEditTeam(team)">Edit</button>
-                      <button class="settings-text-button settings-delete-button" type="button" [disabled]="teams.length <= 1" (click)="deleteTeam(team)" [attr.aria-label]="'Delete ' + team.name">Delete</button>
+                      <button mat-button class="settings-text-button" type="button" (click)="startEditTeam(team)">Edit</button>
+                      <button mat-button class="settings-text-button settings-delete-button" type="button" [disabled]="teams.length <= 1" (click)="deleteTeam(team)" [attr.aria-label]="'Delete ' + team.name">Delete</button>
                     </div>
                   </div>
                   <ul class="managed-member-list" [attr.aria-label]="'Members of ' + team.name">
@@ -122,8 +122,8 @@
                 <span>Separate from rating backups; IDs preserve ratings when names change.</span>
               </div>
               <div class="team-config-buttons">
-                <button class="settings-secondary-button" type="button" (click)="exportTeamConfig()">Export config</button>
-                <button class="settings-secondary-button" type="button" (click)="teamConfigFile.click()">Import config</button>
+                <button mat-stroked-button class="settings-secondary-button" type="button" (click)="exportTeamConfig()">Export config</button>
+                <button mat-stroked-button class="settings-secondary-button" type="button" (click)="teamConfigFile.click()">Import config</button>
                 <input #teamConfigFile class="visually-hidden" type="file" accept="application/json,.json" (change)="importTeamConfig($event)" aria-label="Choose a reviewer team configuration JSON file">
               </div>
             </div>
@@ -213,10 +213,11 @@
                     @for (team of teams; track team.id) {
                       <div class="team-rating">
                         <span class="mobile-team-name">{{ team.shortName }} <span>{{ team.name }}</span></span>
-                        <label class="visually-hidden" [for]="'rating-' + item.id + '-' + team.id">{{ item.description }} — {{ team.name }}</label>
-                        <select class="rating-select" [class.has-rating]="ratingFor('item:' + item.id, team.id) !== ''" [class.rating-critical]="ratingFor('item:' + item.id, team.id) === 'no' || ratingFor('item:' + item.id, team.id) === 'football'" [id]="'rating-' + item.id + '-' + team.id" [value]="ratingFor('item:' + item.id, team.id)" (change)="updateRating('item:' + item.id, team.id, $event)">
-                          @for (option of options; track option.value) { <option [value]="option.value">{{ option.display }} {{ option.label }}</option> }
-                        </select>
+                        <mat-form-field appearance="outline" class="rating-field" [class.has-rating]="ratingFor('item:' + item.id, team.id) !== ''" [class.rating-critical]="ratingFor('item:' + item.id, team.id) === 'no' || ratingFor('item:' + item.id, team.id) === 'football'">
+                          <mat-select [id]="'rating-' + item.id + '-' + team.id" [value]="ratingFor('item:' + item.id, team.id)" [aria-label]="item.description + ' — ' + team.name" (selectionChange)="updateRating('item:' + item.id, team.id, $event.value)">
+                            @for (option of options; track option.value) { <mat-option [value]="option.value">{{ option.display }} {{ option.label }}</mat-option> }
+                          </mat-select>
+                        </mat-form-field>
                         <span class="print-rating">{{ ratingPrintValue('item:' + item.id, team.id) }}</span>
                       </div>
                     }
@@ -238,7 +239,7 @@
                       @if (summary.optionalCount > 0) {
                         <small class="section-rating-meta">Opt unmet: {{ summary.unmetOptionalCount }} / {{ summary.optionalCount }}</small>
                       }
-                      <button class="section-clear-button" type="button" [disabled]="sectionTeamCompleted(section, team.id) === 0" (click)="clearSectionRatings(section, team)" [attr.aria-label]="'Clear all ratings for ' + team.name + ' in ' + section.title" [title]="'Clear all ratings for ' + team.name + ' in ' + section.title">Clear all</button>
+                      <button mat-stroked-button class="section-clear-button" type="button" [disabled]="sectionTeamCompleted(section, team.id) === 0" (click)="clearSectionRatings(section, team)" [attr.aria-label]="'Clear all ratings for ' + team.name + ' in ' + section.title" [title]="'Clear all ratings for ' + team.name + ' in ' + section.title">Clear all</button>
                       <span class="print-rating">{{ summary.printValue }}</span>
                     </div>
                   }
@@ -263,16 +264,18 @@
         <h2 id="team-editor-title">{{ editingTeamId ? 'Edit reviewer team' : 'Add reviewer team' }}</h2>
         <p id="team-editor-description">Update team details and manage the member roster. Existing team member changes save immediately; new teams and their members are saved together.</p>
       </div>
-      <button class="team-editor-close" type="button" aria-label="Close team editor" (click)="cancelTeamEdit()">×</button>
+      <button mat-icon-button class="team-editor-close" type="button" aria-label="Close team editor" (click)="cancelTeamEdit()">×</button>
     </header>
     <form class="team-editor-form" (submit)="saveTeam($event)" novalidate>
       <div class="team-editor-fields">
-        <label for="team-alias">Team alias
-          <input #teamAliasInput id="team-alias" type="text" [value]="teamAlias" (input)="updateTeamAlias($event)" autocomplete="off" maxlength="40" required aria-describedby="team-form-error">
-        </label>
-        <label for="team-full-name">Full team name
-          <input id="team-full-name" type="text" [value]="teamName" (input)="updateTeamName($event)" autocomplete="off" maxlength="100" required aria-describedby="team-form-error">
-        </label>
+        <mat-form-field appearance="outline">
+          <mat-label>Team alias</mat-label>
+          <input matInput #teamAliasInput id="team-alias" type="text" [value]="teamAlias" (input)="updateTeamAlias($event)" autocomplete="off" maxlength="40" required aria-describedby="team-form-error">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Full team name</mat-label>
+          <input matInput id="team-full-name" type="text" [value]="teamName" (input)="updateTeamName($event)" autocomplete="off" maxlength="100" required aria-describedby="team-form-error">
+        </mat-form-field>
       </div>
       <p id="team-form-error" class="team-form-error" role="alert" [hidden]="!teamFormError">{{ teamFormError }}</p>
       <section class="team-editor-roster" aria-labelledby="team-editor-roster-title">
@@ -281,15 +284,15 @@
             <h3 id="team-editor-roster-title">Team members</h3>
             <p>{{ draftMembers.length }} {{ draftMembers.length === 1 ? 'member' : 'members' }} in this roster</p>
           </div>
-          <button class="settings-secondary-button" type="button" (click)="startAddMember()" [disabled]="memberFormOpen">Add member</button>
+          <button mat-stroked-button class="settings-secondary-button" type="button" (click)="startAddMember()" [disabled]="memberFormOpen">Add member</button>
         </div>
         <ul class="team-editor-member-list" aria-label="Members in this team">
           @for (member of draftMembers; track member.id) {
             <li>
               <span>{{ member.name }}</span>
               <div class="managed-team-actions">
-                <button class="settings-text-button" type="button" (click)="startEditMember(member)" [disabled]="memberFormOpen" [attr.aria-label]="'Rename ' + member.name">Rename</button>
-                <button class="settings-text-button settings-delete-button" type="button" (click)="deleteMember(member)" [disabled]="memberFormOpen" [attr.aria-label]="'Delete ' + member.name">Delete</button>
+                <button mat-button class="settings-text-button" type="button" (click)="startEditMember(member)" [disabled]="memberFormOpen" [attr.aria-label]="'Rename ' + member.name">Rename</button>
+                <button mat-button class="settings-text-button settings-delete-button" type="button" (click)="deleteMember(member)" [disabled]="memberFormOpen" [attr.aria-label]="'Delete ' + member.name">Delete</button>
               </div>
             </li>
           } @empty {
@@ -298,20 +301,21 @@
         </ul>
         @if (memberFormOpen) {
           <div class="member-form">
-            <label for="team-member-name">Member name
-              <input #teamMemberNameInput id="team-member-name" type="text" [value]="memberName" (input)="updateMemberName($event)" (keydown.enter)="saveMember($event)" autocomplete="off" maxlength="100" required aria-describedby="member-form-error">
-            </label>
+            <mat-form-field appearance="outline">
+              <mat-label>Member name</mat-label>
+              <input matInput #teamMemberNameInput id="team-member-name" type="text" [value]="memberName" (input)="updateMemberName($event)" (keydown.enter)="saveMember($event)" autocomplete="off" maxlength="100" required aria-describedby="member-form-error">
+            </mat-form-field>
             <p id="member-form-error" class="team-form-error" role="alert" [hidden]="!memberFormError">{{ memberFormError }}</p>
             <div class="team-form-actions">
-              <button class="settings-primary-button" type="button" (click)="saveMember($event)">{{ editingMemberId ? 'Save name' : 'Add to roster' }}</button>
-              <button class="settings-secondary-button" type="button" (click)="cancelMemberEdit()">Cancel</button>
+              <button mat-flat-button class="settings-primary-button" type="button" (click)="saveMember($event)">{{ editingMemberId ? 'Save name' : 'Add to roster' }}</button>
+              <button mat-stroked-button class="settings-secondary-button" type="button" (click)="cancelMemberEdit()">Cancel</button>
             </div>
           </div>
         }
       </section>
       <footer class="team-editor-actions">
-        <button class="settings-secondary-button" type="button" (click)="cancelTeamEdit()">Cancel</button>
-        <button class="settings-primary-button" type="submit">{{ editingTeamId ? 'Save changes' : 'Add team' }}</button>
+        <button mat-stroked-button class="settings-secondary-button" type="button" (click)="cancelTeamEdit()">Cancel</button>
+        <button mat-flat-button class="settings-primary-button" type="submit">{{ editingTeamId ? 'Save changes' : 'Add team' }}</button>
       </footer>
     </form>
   </section>
@@ -331,7 +335,7 @@
           <h3 id="startup-config-title">Team configuration</h3>
           <p>Team names, stable IDs, and member lists.</p>
         </div>
-        <button class="settings-secondary-button" type="button" (click)="startupConfigFile.click()">Choose config JSON</button>
+        <button mat-stroked-button class="settings-secondary-button" type="button" (click)="startupConfigFile.click()">Choose config JSON</button>
         <input #startupConfigFile class="visually-hidden" type="file" accept="application/json,.json" (change)="importTeamConfig($event)" aria-label="Choose a team configuration JSON file">
       </section>
       <section class="startup-file-option" aria-labelledby="startup-results-title">
@@ -340,14 +344,14 @@
           <h3 id="startup-results-title">Project Checklist results</h3>
           <p>Saved ratings from a results backup.</p>
         </div>
-        <button class="settings-secondary-button" type="button" (click)="startupResultsFile.click()">Choose results JSON</button>
+        <button mat-stroked-button class="settings-secondary-button" type="button" (click)="startupResultsFile.click()">Choose results JSON</button>
         <input #startupResultsFile class="visually-hidden" type="file" accept="application/json,.json" (change)="importBackup($event)" aria-label="Choose a Project Checklist results JSON file">
       </section>
     </div>
     <p class="startup-import-message" role="status" aria-live="polite" [hidden]="!startupImportMessage">{{ startupImportMessage }}</p>
     <div class="startup-modal-actions">
       <span>Browser-saved data is kept unless you import a file.</span>
-      <button class="settings-primary-button" type="button" autofocus (click)="continueWithSavedData()">Continue with current data</button>
+      <button mat-flat-button class="settings-primary-button" type="button" autofocus (click)="continueWithSavedData()">Continue with current data</button>
     </div>
   </section>
 </div>
