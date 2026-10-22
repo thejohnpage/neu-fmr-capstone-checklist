@@ -1,6 +1,6 @@
 {
   "name": "leap-review-ratings",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "start": "ng serve",
