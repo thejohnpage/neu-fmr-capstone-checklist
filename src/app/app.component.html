@@ -135,6 +135,71 @@
             </div>
           </div>
         </details>
+        <details class="team-settings">
+          <summary>Manage business requirements <span>{{ businessRequirements.length }} configured</span></summary>
+          <div class="team-settings-content">
+            <div class="team-settings-heading">
+              <div>
+                <h2>Business requirement settings</h2>
+                <p>Descriptions are saved in this browser. Export a JSON copy to preserve or move your changes.</p>
+              </div>
+              <button mat-flat-button class="settings-primary-button" type="button" (click)="startAddBusinessRequirement()" [disabled]="businessRequirementFormOpen">Add requirement</button>
+            </div>
+            <ul class="business-requirements-list" aria-label="Configured business requirements">
+              @for (requirement of businessRequirements; track requirement.id) {
+                <li class="business-requirement-entry">
+                  <div class="business-requirement-row">
+                    <div class="business-requirement-copy">
+                      <div><strong>{{ requirement.id }}</strong><span>{{ requirement.priority }}</span></div>
+                      <p>{{ requirement.description }}</p>
+                    </div>
+                    <div class="managed-team-actions">
+                      <button mat-button class="settings-text-button" type="button" (click)="startEditBusinessRequirement(requirement)" [disabled]="businessRequirementFormOpen">Edit</button>
+                      <button mat-button class="settings-text-button settings-delete-button" type="button" (click)="deleteBusinessRequirement(requirement)" [disabled]="businessRequirementFormOpen" [attr.aria-label]="'Delete ' + requirement.id">Delete</button>
+                    </div>
+                  </div>
+                </li>
+              } @empty {
+                <li class="business-requirements-empty">No business requirements configured.</li>
+              }
+            </ul>
+            @if (businessRequirementFormOpen) {
+              <form class="business-requirement-form" (submit)="saveBusinessRequirement($event)" novalidate>
+                <div class="business-requirement-fields">
+                  <label>Requirement ID
+                    <input type="text" [value]="draftBusinessRequirementId" readonly aria-label="Requirement ID">
+                  </label>
+                  <label>Priority
+                    <select [value]="draftBusinessRequirementPriority" (change)="updateBusinessRequirementPriority($event)" aria-label="Requirement priority">
+                      <option value="Must">Must</option>
+                      <option value="Should">Should</option>
+                      <option value="Could">Could</option>
+                    </select>
+                  </label>
+                  <label class="business-requirement-description-field">Description
+                    <textarea [value]="draftBusinessRequirementDescription" (input)="updateBusinessRequirementDescription($event)" rows="4" maxlength="2000" required aria-describedby="business-requirement-form-error"></textarea>
+                  </label>
+                </div>
+                <p id="business-requirement-form-error" class="team-form-error" role="alert" [hidden]="!businessRequirementFormError">{{ businessRequirementFormError }}</p>
+                <div class="team-form-actions">
+                  <button mat-flat-button class="settings-primary-button" type="submit">{{ editingBusinessRequirementId ? 'Save changes' : 'Add requirement' }}</button>
+                  <button mat-stroked-button class="settings-secondary-button" type="button" (click)="cancelBusinessRequirementEdit()">Cancel</button>
+                </div>
+              </form>
+            }
+            <div class="team-config-actions">
+              <div>
+                <strong>Business requirements file</strong>
+                <span>Import or export the edited descriptions as JSON.</span>
+              </div>
+              <div class="team-config-buttons">
+                <button mat-stroked-button class="settings-secondary-button" type="button" (click)="exportBusinessRequirements()">Export requirements</button>
+                <button mat-stroked-button class="settings-secondary-button" type="button" (click)="businessRequirementsFile.click()">Import requirements</button>
+                <input #businessRequirementsFile class="visually-hidden" type="file" accept="application/json,.json" (change)="importBusinessRequirements($event)" aria-label="Choose a business requirements JSON file">
+              </div>
+            </div>
+          </div>
+        </details>
       </section>
 
       <section class="rating-key" aria-label="Rating choices">
@@ -216,7 +281,14 @@
                 <div class="matrix-row">
                   <div class="criterion">
                     <span class="criterion-index">{{ (itemIndex + 1).toString().padStart(2, '0') }}</span>
-                    <span class="criterion-copy"><span class="criterion-name">{{ item.description }}</span><span class="priority-tag" [class.priority-must]="item.priority === 'Must'" [class.priority-should]="item.priority === 'Should'" [class.priority-opt]="item.priority === 'Opt'">{{ item.priority }}</span></span>
+                    <span class="criterion-copy">
+                      @if (requirementsForItem(item).length > 0) {
+                        <button class="criterion-name criterion-name-button" type="button" (click)="showRequirements(item)" [attr.aria-label]="'View business requirement details for ' + item.description" title="View linked business requirement">{{ item.description }}</button>
+                      } @else {
+                        <span class="criterion-name">{{ item.description }}</span>
+                      }
+                      <span class="priority-tag" [class.priority-must]="item.priority === 'Must'" [class.priority-should]="item.priority === 'Should'" [class.priority-opt]="item.priority === 'Opt'">{{ item.priority }}</span>
+                    </span>
                   </div>
                   <div class="rating-cells">
                     @for (team of visibleTeams; track team.id) {

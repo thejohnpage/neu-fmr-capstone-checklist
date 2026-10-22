@@ -1,0 +1,97 @@
+{
+  "format": "leap-business-requirements",
+  "version": 1,
+  "source": "LEAP-BRS-2026-014, Version 0.9 — Draft for Delivery Partner Response",
+  "requirements": [
+    {
+      "id": "BR-01",
+      "description": "A prospective client must be able to register for the platform and sign in securely on return visits.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-02",
+      "description": "A client may only view and act on their own positions, cash and order history — never another client’s.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-03",
+      "description": "A client’s signed-in session should be time-limited and revocable, so a compromised credential has bounded exposure.",
+      "priority": "Should"
+    },
+    {
+      "id": "BR-04",
+      "description": "A client must be able to submit an order to buy or sell a supported instrument.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-05",
+      "description": "Every order must be checked against the firm’s trading rules (for example, sufficient cash or holding, instrument currently tradable) before it is accepted.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-06",
+      "description": "An accepted order must be recorded as a firm commitment before it is executed. Execution happens afterwards and separately, and can fail or be delayed — the record of intent must not depend on execution succeeding.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-07",
+      "description": "A client must be able to see an order’s status change — submitted, accepted, filled or rejected — without manually refreshing the page.",
+      "priority": "Should"
+    },
+    {
+      "id": "BR-08",
+      "description": "An order must be priced against a current market quote at the point of execution, and filled or rejected on that basis.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-09",
+      "description": "When an order is filled, the client’s holdings, their cash balance and the permanent trade record must all update together. None of the three may update without the others, even if the platform fails partway through.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-10",
+      "description": "A client must be able to see their current holdings and cash balance, correct as of their last executed trade.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-11",
+      "description": "A client must be able to see a chronological history of their own orders and fills.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-12",
+      "description": "The platform must price orders using current market quotes across the instrument classes the firm supports at launch: equities (UK/US and Indian markets), foreign exchange, and crypto assets.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-13",
+      "description": "A client should be able to see an indicative price before submitting an order, not only after it is filled.",
+      "priority": "Should"
+    },
+    {
+      "id": "BR-14",
+      "description": "Every accepted order, pricing decision and resulting change to cash or holdings must be permanently recorded and attributable to a specific client and time. This record is the firm’s legal position and must survive any system restart or failed deployment.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-15",
+      "description": "For any trade, it must be possible to reconstruct its full lifecycle — when it was placed, how it was priced, what it settled as — for audit or client dispute purposes, without relying on anyone’s memory of what happened.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-16",
+      "description": "The business must be able to analyse trading activity over time — by instrument, by period, by client segment — without that analysis slowing down or competing with live client trading.",
+      "priority": "Must"
+    },
+    {
+      "id": "BR-17",
+      "description": "The platform should surface a small set of business insights (for example, trading volumes, most active instruments, client activity trends) to internal stakeholders.",
+      "priority": "Should"
+    },
+    {
+      "id": "BR-18",
+      "description": "The delivery team should identify and build one additional capability that extends the platform’s value to clients or to the business, with a stated justification for why it was chosen over other options.",
+      "priority": "Should"
+    }
+  ]
+}

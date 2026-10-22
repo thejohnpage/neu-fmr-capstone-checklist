@@ -6,7 +6,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { firstValueFrom } from 'rxjs';
 import packageInfo from '../../package.json';
-import { ReviewMember, ReviewSection, ReviewTeam, RatingValue, RATING_OPTIONS, SECTIONS, TEAMS } from './checklist-data';
+import businessRequirementsData from '../../data/leap-business-requirements.json';
+import { ReviewItem, ReviewMember, ReviewSection, ReviewTeam, RatingValue, RATING_OPTIONS, SECTIONS, TEAMS } from './checklist-data';
 
 interface ReviewBackup {
   format: 'leap-review-ratings';
@@ -20,6 +21,14 @@ interface TeamConfiguration {
   version: 2;
   exportedAt: string;
   teams: ReviewTeam[];
+}
+
+interface BusinessRequirementsConfiguration {
+  format: 'leap-business-requirements';
+  version: 1;
+  exportedAt?: string;
+  source?: string;
+  requirements: BusinessRequirement[];
 }
 
 interface SectionRatingSummary {
@@ -60,6 +69,16 @@ interface ConfirmationDialogData {
   confirmLabel: string;
 }
 
+interface BusinessRequirement {
+  id: string;
+  description: string;
+  priority: 'Must' | 'Should' | 'Could';
+}
+
+interface RequirementDialogData {
+  requirements: BusinessRequirement[];
+}
+
 @Component({
   selector: 'app-confirmation-dialog',
   standalone: true,
@@ -81,6 +100,32 @@ class ConfirmationDialogComponent {
 }
 
 @Component({
+  selector: 'app-requirement-dialog',
+  standalone: true,
+  imports: [MatButtonModule, MatDialogModule],
+  template: `
+    <h2 mat-dialog-title>Business requirement{{ data.requirements.length === 1 ? '' : 's' }}</h2>
+    <mat-dialog-content>
+      @for (requirement of data.requirements; track requirement.id) {
+        <article class="business-requirement">
+          <header><strong>{{ requirement.id }}</strong><span>{{ requirement.priority }}</span></header>
+          <p>{{ requirement.description }}</p>
+        </article>
+      }
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-flat-button type="button" (click)="dialogRef.close()">Close</button>
+    </mat-dialog-actions>
+  `
+})
+class RequirementDialogComponent {
+  constructor(
+    @Inject(MAT_DIALOG_DATA) readonly data: RequirementDialogData,
+    readonly dialogRef: MatDialogRef<RequirementDialogComponent, void>
+  ) {}
+}
+
+@Component({
   selector: 'app-root',
   standalone: true,
   imports: [MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule],
@@ -89,12 +134,18 @@ class ConfirmationDialogComponent {
 export class AppComponent {
   readonly appVersion = packageInfo.version;
   readonly copyrightYear = new Date().getFullYear();
+  businessRequirements: BusinessRequirement[] = businessRequirementsData.requirements.map((requirement) => ({
+    id: requirement.id,
+    description: requirement.description,
+    priority: requirement.priority as BusinessRequirement['priority']
+  }));
   teams: ReviewTeam[] = TEAMS.map((team) => ({ ...team, members: [...team.members] }));
   selectedTeamId = 'all';
   readonly sections = SECTIONS;
   readonly options = RATING_OPTIONS;
   readonly storageKey = 'leap-review-ratings-v1';
   readonly teamStorageKey = 'leap-review-teams-v1';
+  readonly businessRequirementsStorageKey = 'leap-review-business-requirements-v1';
   readonly dirtyStateStorageKey = 'leap-review-dirty-state-v1';
   readonly themeStorageKey = 'leap-review-theme-v1';
   theme: 'light' | 'dark' = 'light';
@@ -107,6 +158,12 @@ export class AppComponent {
   editingTeamId: string | null = null;
   teamFormOpen = false;
   teamFormError = '';
+  businessRequirementFormOpen = false;
+  editingBusinessRequirementId: string | null = null;
+  draftBusinessRequirementId = '';
+  draftBusinessRequirementDescription = '';
+  draftBusinessRequirementPriority: BusinessRequirement['priority'] = 'Should';
+  businessRequirementFormError = '';
   draftMembers: ReviewMember[] = [];
   memberName = '';
   memberFormOpen = false;
@@ -130,6 +187,7 @@ export class AppComponent {
   ) {
     this.loadTheme();
     this.loadSavedTeams();
+    this.loadBusinessRequirements();
     this.loadSavedRatings();
     this.loadDirtyState();
   }
@@ -482,6 +540,141 @@ export class AppComponent {
     }
   }
 
+  requirementsForItem(item: ReviewItem): BusinessRequirement[] {
+    const requirementIds = item.description.match(/BR-\d{2,}/g) ?? [];
+    return requirementIds
+      .map((id) => this.businessRequirements.find((requirement) => requirement.id === id))
+      .filter((requirement): requirement is BusinessRequirement => requirement !== undefined);
+  }
+
+  startAddBusinessRequirement(): void {
+    this.editingBusinessRequirementId = null;
+    this.draftBusinessRequirementId = this.nextBusinessRequirementId();
+    this.draftBusinessRequirementDescription = '';
+    this.draftBusinessRequirementPriority = 'Should';
+    this.businessRequirementFormError = '';
+    this.businessRequirementFormOpen = true;
+  }
+
+  startEditBusinessRequirement(requirement: BusinessRequirement): void {
+    this.editingBusinessRequirementId = requirement.id;
+    this.draftBusinessRequirementId = requirement.id;
+    this.draftBusinessRequirementDescription = requirement.description;
+    this.draftBusinessRequirementPriority = requirement.priority;
+    this.businessRequirementFormError = '';
+    this.businessRequirementFormOpen = true;
+  }
+
+  updateBusinessRequirementDescription(event: Event): void {
+    this.draftBusinessRequirementDescription = (event.target as HTMLTextAreaElement).value;
+    this.businessRequirementFormError = '';
+  }
+
+  updateBusinessRequirementPriority(event: Event): void {
+    const priority = (event.target as HTMLSelectElement).value;
+    if (priority === 'Must' || priority === 'Should' || priority === 'Could') {
+      this.draftBusinessRequirementPriority = priority;
+    }
+    this.businessRequirementFormError = '';
+  }
+
+  saveBusinessRequirement(event: Event): void {
+    event.preventDefault();
+    const id = this.draftBusinessRequirementId.trim().toUpperCase();
+    const description = this.draftBusinessRequirementDescription.trim();
+    if (!description) {
+      this.businessRequirementFormError = 'Enter a requirement description.';
+      return;
+    }
+    if (this.editingBusinessRequirementId === null && this.businessRequirements.some((requirement) => requirement.id === id)) {
+      this.businessRequirementFormError = 'That requirement ID already exists.';
+      return;
+    }
+
+    const updatedRequirement: BusinessRequirement = {
+      id,
+      description,
+      priority: this.draftBusinessRequirementPriority
+    };
+    this.businessRequirements = this.editingBusinessRequirementId
+      ? this.businessRequirements.map((requirement) => requirement.id === this.editingBusinessRequirementId ? updatedRequirement : requirement)
+      : [...this.businessRequirements, updatedRequirement];
+    const successMessage = this.editingBusinessRequirementId ? 'Business requirement updated' : 'Business requirement added';
+    this.cancelBusinessRequirementEdit();
+    this.persistBusinessRequirements(successMessage);
+  }
+
+  cancelBusinessRequirementEdit(): void {
+    this.businessRequirementFormOpen = false;
+    this.editingBusinessRequirementId = null;
+    this.draftBusinessRequirementId = '';
+    this.draftBusinessRequirementDescription = '';
+    this.draftBusinessRequirementPriority = 'Should';
+    this.businessRequirementFormError = '';
+  }
+
+  async deleteBusinessRequirement(requirement: BusinessRequirement): Promise<void> {
+    if (!await this.confirmAction(
+      'Delete business requirement',
+      `Delete ${requirement.id}? Evaluation items linked to this ID will no longer open a requirement description.`,
+      'Delete requirement'
+    )) return;
+
+    this.businessRequirements = this.businessRequirements.filter((candidate) => candidate.id !== requirement.id);
+    if (this.editingBusinessRequirementId === requirement.id) this.cancelBusinessRequirementEdit();
+    this.persistBusinessRequirements('Business requirement deleted');
+  }
+
+  async exportBusinessRequirements(): Promise<void> {
+    const configuration: BusinessRequirementsConfiguration = {
+      format: 'leap-business-requirements',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      requirements: this.businessRequirements.map((requirement) => ({ ...requirement }))
+    };
+    try {
+      const saved = await this.saveJson(configuration, `leap-business-requirements-${new Date().toISOString().slice(0, 10)}.json`);
+      if (!saved) {
+        this.setStatus('saved', 'Business requirements export canceled');
+        return;
+      }
+      this.setStatus('saved', 'Business requirements exported');
+    } catch {
+      this.setStatus('error', 'Could not save the business requirements file');
+    }
+  }
+
+  async importBusinessRequirements(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    try {
+      const parsed: unknown = JSON.parse(await file.text());
+      this.businessRequirements = this.validateBusinessRequirements(parsed);
+      this.cancelBusinessRequirementEdit();
+      this.persistBusinessRequirements('Business requirements imported');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'The selected file could not be read.';
+      this.setStatus('error', message);
+    } finally {
+      input.value = '';
+      this.changeDetectorRef.markForCheck();
+    }
+  }
+
+  showRequirements(item: ReviewItem): void {
+    const requirements = this.requirementsForItem(item);
+    if (!requirements.length) return;
+    this.dialog.open(RequirementDialogComponent, {
+      data: { requirements },
+      width: 'min(560px, calc(100vw - 32px))',
+      panelClass: 'requirement-dialog-panel',
+      autoFocus: 'first-tabbable',
+      restoreFocus: true
+    });
+  }
+
   sectionCompleted(section: ReviewSection, reviewTeams: ReviewTeam[] = this.visibleTeams): number {
     return section.items.reduce((count, item) => count + reviewTeams.filter((team) => this.ratingFor(`item:${item.id}`, team.id) !== '').length, 0);
   }
@@ -715,6 +908,17 @@ export class AppComponent {
     }
   }
 
+  private loadBusinessRequirements(): void {
+    try {
+      const stored = localStorage.getItem(this.businessRequirementsStorageKey);
+      if (!stored) return;
+      this.businessRequirements = this.validateBusinessRequirements(JSON.parse(stored));
+    } catch {
+      this.saveState = 'error';
+      this.saveMessage = 'Saved business requirements could not be loaded';
+    }
+  }
+
   private loadSavedRatings(): void {
     try {
       const stored = localStorage.getItem(this.storageKey);
@@ -818,6 +1022,30 @@ export class AppComponent {
     }
   }
 
+  private persistBusinessRequirements(successMessage: string): boolean {
+    try {
+      const configuration: BusinessRequirementsConfiguration = {
+        format: 'leap-business-requirements',
+        version: 1,
+        requirements: this.businessRequirements.map((requirement) => ({ ...requirement }))
+      };
+      localStorage.setItem(this.businessRequirementsStorageKey, JSON.stringify(configuration));
+      this.setStatus('saved', successMessage);
+      return true;
+    } catch {
+      this.setStatus('error', 'Could not save business requirements to browser storage');
+      return false;
+    }
+  }
+
+  private nextBusinessRequirementId(): string {
+    const nextId = this.businessRequirements.reduce((maximum, requirement) => {
+      const match = requirement.id.match(/^BR-(\d+)$/);
+      return match ? Math.max(maximum, Number(match[1])) : maximum;
+    }, 0) + 1;
+    return `BR-${nextId.toString().padStart(2, '0')}`;
+  }
+
   private createTeamId(): string {
     const id = typeof crypto.randomUUID === 'function'
       ? `team-${crypto.randomUUID()}`
@@ -864,6 +1092,30 @@ export class AppComponent {
     link.download = fileName;
     link.click();
     window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+  }
+
+  private validateBusinessRequirements(value: unknown): BusinessRequirement[] {
+    if (!this.isRecord(value) || value['format'] !== 'leap-business-requirements' || value['version'] !== 1 || !Array.isArray(value['requirements'])) {
+      throw new Error('This file is not a supported LEAP business requirements file.');
+    }
+
+    const ids = new Set<string>();
+    const requirements: BusinessRequirement[] = [];
+    for (const candidate of value['requirements']) {
+      if (!this.isRecord(candidate) || typeof candidate['id'] !== 'string' || typeof candidate['description'] !== 'string') {
+        throw new Error('The requirements file contains an entry with missing or invalid fields.');
+      }
+      const id = candidate['id'].trim().toUpperCase();
+      const description = candidate['description'].trim();
+      const priority = candidate['priority'];
+      if (!/^BR-\d{2,}$/.test(id) || !description || (priority !== 'Must' && priority !== 'Should' && priority !== 'Could')) {
+        throw new Error('Every requirement needs a valid BR ID, description, and priority.');
+      }
+      if (ids.has(id)) throw new Error('Business requirement IDs must be unique.');
+      ids.add(id);
+      requirements.push({ id, description, priority });
+    }
+    return requirements;
   }
 
   private validateTeamConfig(value: unknown): ReviewTeam[] {

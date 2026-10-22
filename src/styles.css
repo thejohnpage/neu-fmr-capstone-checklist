@@ -147,6 +147,22 @@ h1 em { color: #738d5b; font-weight: 400; }
 .team-config-actions > div:first-child { display: grid; gap: 3px; }
 .team-config-actions strong { color: #52665a; font-size: 10px; }
 .team-config-actions span { color: #87938a; font-size: 9px; }
+.business-requirements-list { display: grid; margin: 0; padding: 0; border-top: 1px solid #e8ede7; list-style: none; }
+.business-requirement-entry { padding: 10px 0; border-bottom: 1px solid #e8ede7; }
+.business-requirement-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.business-requirement-copy { min-width: 0; }
+.business-requirement-copy > div { display: flex; align-items: center; gap: 10px; }
+.business-requirement-copy strong { color: #355141; font-size: 10px; }
+.business-requirement-copy > div span { color: #78847d; font-size: 9px; font-weight: 600; }
+.business-requirement-copy p { margin-top: 5px; color: #64736a; font-size: 10px; line-height: 1.5; }
+.business-requirements-empty { padding: 12px 0; color: #87938a; font-size: 10px; font-style: italic; }
+.business-requirement-form { margin-top: 12px; padding: 12px; border: 1px solid #dfe7dc; background: #f6f8f4; }
+.business-requirement-fields { display: grid; grid-template-columns: minmax(100px, .4fr) minmax(130px, .6fr); gap: 12px; }
+.business-requirement-fields label { display: grid; gap: 5px; color: #5c6d62; font-size: 9px; font-weight: 700; }
+.business-requirement-fields input, .business-requirement-fields select, .business-requirement-fields textarea { width: 100%; min-height: 34px; padding: 7px 9px; border: 1px solid #cfd9d0; border-radius: 0; background: #fff; color: #24392e; font: inherit; font-size: 11px; }
+.business-requirement-fields input[readonly] { background: #f2f5f0; }
+.business-requirement-fields textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
+.business-requirement-description-field { grid-column: 1 / -1; }
 
 .rating-key { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 19px; padding: 14px 2px 23px; }
 .key-title { margin-right: 2px; color: #86938a; font-size: 8px; font-weight: 700; letter-spacing: .14em; }
@@ -381,6 +397,9 @@ h1 em { color: #738d5b; font-weight: 400; }
   .managed-member-list li { gap: 5px; }
   .team-config-actions { align-items: flex-start; flex-direction: column; }
   .team-config-buttons { flex-wrap: wrap; }
+  .business-requirement-row { align-items: flex-start; }
+  .business-requirement-fields { grid-template-columns: 1fr; gap: 9px; }
+  .business-requirement-description-field { grid-column: auto; }
   .page-footer { flex-direction: column; gap: 6px; padding-top: 18px; font-size: 8px; }
 }
 
@@ -457,9 +476,12 @@ h1 em { color: #738d5b; font-weight: 400; }
 :root[data-theme='dark'] .rating-field.rating-critical .mat-mdc-select-value { color: #ffb4a9; }
 :root[data-theme='dark'] .team-editor-fields .mat-mdc-text-field-wrapper, :root[data-theme='dark'] .member-form .mat-mdc-text-field-wrapper { background: var(--input-surface); }
 :root[data-theme='dark'] .team-editor-fields .mdc-text-field__input, :root[data-theme='dark'] .member-form .mdc-text-field__input { color: var(--ink); }
-:root[data-theme='dark'] :is(.team-key, .team-settings, .managed-team-list, .managed-team, .team-config-actions, .team-editor-heading, .team-editor-actions, .team-editor-member-list, .team-editor-member-list li, .startup-modal-actions, .team-settings-content, .matrix-header, .matrix-row, .section-rating-row) { border-color: var(--line); }
-:root[data-theme='dark'] :is(.team-settings > summary, .team-settings-heading h2, .managed-team strong, .team-config-actions strong, .team-editor-roster-heading h3, .team-editor-member-list li, .team-editor-fields label, .member-form label, .startup-file-option h3, .startup-order-note strong, .startup-modal h2, .team-editor-heading h2, .overall-heading h2, .section-heading h2, .criterion-name, .matrix-team-heading > span, .team-abbreviation, .stat-number, .section-completion, .breadcrumb strong) { color: var(--text-strong); }
-:root[data-theme='dark'] :is(.breadcrumb, .intro-copy > p, .save-indicator, .team-key-heading, .team-full-name, .team-settings > summary span, .team-settings-heading p, .managed-team-top > div:first-child span, .managed-member-list li, .team-config-actions span, .rating-key, .key-choice, .overall-heading p, .matrix-team-heading small, .criterion-index, .section-completion small, .completion-total, .page-footer, .startup-modal > p, .startup-file-option p, .startup-modal-actions > span, .team-editor-heading p, .team-editor-roster-heading p, .team-editor-member-list .empty-member-list) { color: var(--text-muted); }
+:root[data-theme='dark'] :is(.team-key, .team-settings, .managed-team-list, .managed-team, .team-config-actions, .team-editor-heading, .team-editor-actions, .team-editor-member-list, .team-editor-member-list li, .startup-modal-actions, .team-settings-content, .business-requirements-list, .business-requirement-entry, .business-requirement-form, .matrix-header, .matrix-row, .section-rating-row) { border-color: var(--line); }
+:root[data-theme='dark'] :is(.team-settings > summary, .team-settings-heading h2, .managed-team strong, .team-config-actions strong, .team-editor-roster-heading h3, .team-editor-member-list li, .team-editor-fields label, .member-form label, .business-requirement-copy strong, .business-requirement-fields label, .business-requirements-empty, .startup-file-option h3, .startup-order-note strong, .startup-modal h2, .team-editor-heading h2, .overall-heading h2, .section-heading h2, .criterion-name, .matrix-team-heading > span, .team-abbreviation, .stat-number, .section-completion, .breadcrumb strong) { color: var(--text-strong); }
+:root[data-theme='dark'] :is(.breadcrumb, .intro-copy > p, .save-indicator, .team-key-heading, .team-full-name, .team-settings > summary span, .team-settings-heading p, .managed-team-top > div:first-child span, .managed-member-list li, .team-config-actions span, .business-requirement-copy p, .business-requirement-copy > div span, .business-requirements-empty, .rating-key, .key-choice, .overall-heading p, .matrix-team-heading small, .criterion-index, .section-completion small, .completion-total, .page-footer, .startup-modal > p, .startup-file-option p, .startup-modal-actions > span, .team-editor-heading p, .team-editor-roster-heading p, .team-editor-member-list .empty-member-list) { color: var(--text-muted); }
+:root[data-theme='dark'] .business-requirement-form { background: var(--surface-soft); }
+:root[data-theme='dark'] .business-requirement-fields input, :root[data-theme='dark'] .business-requirement-fields select, :root[data-theme='dark'] .business-requirement-fields textarea { border-color: var(--border); background: var(--input-surface); color: var(--ink); }
+:root[data-theme='dark'] .business-requirement-fields input[readonly] { background: var(--surface-soft); }
 :root[data-theme='dark'] :is(.eyebrow, .section-kicker, .team-key-count, .nav-link-copy, .text-button, .stat-label, .team-abbreviation, .section-number) { color: #b5ce9b; }
 :root[data-theme='dark'] .export-indicator { color: #b9d99c; }
 :root[data-theme='dark'] .export-indicator.export-needed,
@@ -544,3 +566,20 @@ h1 em { color: #738d5b; font-weight: 400; }
 :root[data-theme='dark'] .team-editor-fields .mdc-floating-label, :root[data-theme='dark'] .member-form .mdc-floating-label { color: var(--text-muted) !important; }
 :root[data-theme='dark'] .team-editor-fields .mat-mdc-input-element, :root[data-theme='dark'] .member-form .mat-mdc-input-element { color: var(--ink) !important; }
 :root[data-theme='dark'] .team-editor-fields .mdc-notched-outline__leading, :root[data-theme='dark'] .team-editor-fields .mdc-notched-outline__notch, :root[data-theme='dark'] .team-editor-fields .mdc-notched-outline__trailing, :root[data-theme='dark'] .member-form .mdc-notched-outline__leading, :root[data-theme='dark'] .member-form .mdc-notched-outline__notch, :root[data-theme='dark'] .member-form .mdc-notched-outline__trailing { border-color: var(--border) !important; }
+
+.criterion-name-button { width: 100%; padding: 0; border: 0; background: transparent; font: inherit; text-align: left; text-decoration: underline dotted; text-underline-offset: 3px; cursor: pointer; }
+.criterion-name-button:hover { color: #426447; }
+.criterion-name-button:focus-visible { outline: 2px solid #64815a; outline-offset: 2px; }
+.requirement-dialog-panel .mat-mdc-dialog-surface { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.requirement-dialog-panel [mat-dialog-title] { margin: 0; padding: 22px 24px 8px; color: var(--ink); font-size: 19px; font-weight: 650; }
+.requirement-dialog-panel mat-dialog-content { max-height: min(65vh, 560px); padding: 8px 24px 18px; color: var(--ink-soft); font-size: 14px; line-height: 1.55; }
+.requirement-dialog-panel mat-dialog-actions { gap: 8px; padding: 8px 16px 16px; }
+.business-requirement { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.business-requirement:last-child { border-bottom: 0; }
+.business-requirement header { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--ink); }
+.business-requirement header span { color: var(--muted); font-size: 11px; font-weight: 600; }
+.business-requirement p { margin: 8px 0 0; }
+:root[data-theme='dark'] .criterion-name-button:hover { color: #c8e8a0; }
+:root[data-theme='dark'] .requirement-dialog-panel .mat-mdc-dialog-title { color: #e6eee7 !important; }
+:root[data-theme='dark'] .requirement-dialog-panel .mat-mdc-dialog-content { color: #c2d0c5 !important; }
+:root[data-theme='dark'] .requirement-dialog-panel .mat-mdc-dialog-actions .mdc-button__label { color: #c8e8a0; }
