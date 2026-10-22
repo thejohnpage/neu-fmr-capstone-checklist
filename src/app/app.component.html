@@ -39,6 +39,7 @@
           <span class="save-dot" aria-hidden="true"></span>{{ saveMessage }}
         </span>
         <span class="export-indicator" [class.export-needed]="configDirty" [attr.aria-label]="configDirty ? 'Team configuration needs export' : 'Team configuration export is current'">Config: {{ configDirty ? 'export needed' : 'current' }}</span>
+        <span class="export-indicator" [class.export-needed]="businessRequirementsDirty" [attr.aria-label]="businessRequirementsDirty ? 'Business requirements need export' : 'Business requirements export is current'">Requirements: {{ businessRequirementsDirty ? 'export needed' : 'current' }}</span>
         <span class="export-indicator" [class.export-needed]="resultsDirty" [attr.aria-label]="resultsDirty ? 'Project Checklist results need export' : 'Project Checklist results export is current'">Results: {{ resultsDirty ? 'export needed' : 'current' }}</span>
         <button mat-button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-label]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'" [attr.aria-pressed]="theme === 'dark'" [attr.title]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">
           <span aria-hidden="true">◐</span><span>{{ theme === 'dark' ? 'Light' : 'Dark' }}</span>
@@ -177,7 +178,7 @@
                     </select>
                   </label>
                   <label class="business-requirement-description-field">Description
-                    <textarea [value]="draftBusinessRequirementDescription" (input)="updateBusinessRequirementDescription($event)" rows="4" maxlength="2000" required aria-describedby="business-requirement-form-error"></textarea>
+                    <textarea #businessRequirementDescriptionInput [value]="draftBusinessRequirementDescription" (input)="updateBusinessRequirementDescription($event)" rows="4" maxlength="2000" required aria-describedby="business-requirement-form-error"></textarea>
                   </label>
                 </div>
                 <p id="business-requirement-form-error" class="team-form-error" role="alert" [hidden]="!businessRequirementFormError">{{ businessRequirementFormError }}</p>

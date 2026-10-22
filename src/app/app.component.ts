@@ -28,6 +28,7 @@ interface BusinessRequirementsConfiguration {
   version: 1;
   exportedAt?: string;
   source?: string;
+  lastAssignedId?: number;
   requirements: BusinessRequirement[];
 }
 
@@ -143,6 +144,7 @@ export class AppComponent {
   selectedTeamId = 'all';
   readonly sections = SECTIONS;
   readonly options = RATING_OPTIONS;
+  businessRequirementIdHighWaterMark = 0;
   readonly storageKey = 'leap-review-ratings-v1';
   readonly teamStorageKey = 'leap-review-teams-v1';
   readonly businessRequirementsStorageKey = 'leap-review-business-requirements-v1';
@@ -173,12 +175,14 @@ export class AppComponent {
   startupImportMessage = '';
   resultsDirty = false;
   configDirty = false;
+  businessRequirementsDirty = false;
   private teamModalReturnFocus: HTMLElement | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
   private collapseSectionsAfterPrint = false;
 
   @ViewChild('teamAliasInput') private teamAliasInput?: ElementRef<HTMLInputElement>;
   @ViewChild('teamMemberNameInput') private teamMemberNameInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('businessRequirementDescriptionInput') private businessRequirementDescriptionInput?: ElementRef<HTMLTextAreaElement>;
   @ViewChild('teamEditorDialog') private teamEditorDialog?: ElementRef<HTMLElement>;
 
   constructor(
@@ -186,9 +190,10 @@ export class AppComponent {
     private readonly changeDetectorRef: ChangeDetectorRef
   ) {
     this.loadTheme();
+    this.businessRequirementIdHighWaterMark = this.highestBusinessRequirementId(this.businessRequirements);
     this.loadSavedTeams();
-    this.loadBusinessRequirements();
     this.loadSavedRatings();
+    this.loadBusinessRequirements();
     this.loadDirtyState();
   }
 
@@ -554,6 +559,7 @@ export class AppComponent {
     this.draftBusinessRequirementPriority = 'Should';
     this.businessRequirementFormError = '';
     this.businessRequirementFormOpen = true;
+    this.focusBusinessRequirementDescription();
   }
 
   startEditBusinessRequirement(requirement: BusinessRequirement): void {
@@ -563,6 +569,15 @@ export class AppComponent {
     this.draftBusinessRequirementPriority = requirement.priority;
     this.businessRequirementFormError = '';
     this.businessRequirementFormOpen = true;
+    this.focusBusinessRequirementDescription();
+  }
+
+  private focusBusinessRequirementDescription(): void {
+    window.setTimeout(() => {
+      const descriptionInput = this.businessRequirementDescriptionInput?.nativeElement;
+      descriptionInput?.focus();
+      descriptionInput?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
   }
 
   updateBusinessRequirementDescription(event: Event): void {
@@ -596,11 +611,15 @@ export class AppComponent {
       description,
       priority: this.draftBusinessRequirementPriority
     };
+    if (this.editingBusinessRequirementId === null) {
+      this.businessRequirementIdHighWaterMark = Math.max(this.businessRequirementIdHighWaterMark, Number(id.slice(3)));
+    }
     this.businessRequirements = this.editingBusinessRequirementId
       ? this.businessRequirements.map((requirement) => requirement.id === this.editingBusinessRequirementId ? updatedRequirement : requirement)
       : [...this.businessRequirements, updatedRequirement];
     const successMessage = this.editingBusinessRequirementId ? 'Business requirement updated' : 'Business requirement added';
     this.cancelBusinessRequirementEdit();
+    this.markBusinessRequirementsDirty();
     this.persistBusinessRequirements(successMessage);
   }
 
@@ -622,6 +641,7 @@ export class AppComponent {
 
     this.businessRequirements = this.businessRequirements.filter((candidate) => candidate.id !== requirement.id);
     if (this.editingBusinessRequirementId === requirement.id) this.cancelBusinessRequirementEdit();
+    this.markBusinessRequirementsDirty();
     this.persistBusinessRequirements('Business requirement deleted');
   }
 
@@ -630,6 +650,7 @@ export class AppComponent {
       format: 'leap-business-requirements',
       version: 1,
       exportedAt: new Date().toISOString(),
+      lastAssignedId: this.businessRequirementIdHighWaterMark,
       requirements: this.businessRequirements.map((requirement) => ({ ...requirement }))
     };
     try {
@@ -638,6 +659,7 @@ export class AppComponent {
         this.setStatus('saved', 'Business requirements export canceled');
         return;
       }
+      this.markBusinessRequirementsClean();
       this.setStatus('saved', 'Business requirements exported');
     } catch {
       this.setStatus('error', 'Could not save the business requirements file');
@@ -651,8 +673,14 @@ export class AppComponent {
 
     try {
       const parsed: unknown = JSON.parse(await file.text());
-      this.businessRequirements = this.validateBusinessRequirements(parsed);
+      const configuration = this.validateBusinessRequirements(parsed);
+      this.businessRequirements = configuration.requirements;
+      this.businessRequirementIdHighWaterMark = Math.max(
+        this.businessRequirementIdHighWaterMark,
+        configuration.lastAssignedId ?? 0
+      );
       this.cancelBusinessRequirementEdit();
+      this.markBusinessRequirementsDirty();
       this.persistBusinessRequirements('Business requirements imported');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'The selected file could not be read.';
@@ -912,7 +940,12 @@ export class AppComponent {
     try {
       const stored = localStorage.getItem(this.businessRequirementsStorageKey);
       if (!stored) return;
-      this.businessRequirements = this.validateBusinessRequirements(JSON.parse(stored));
+      const configuration = this.validateBusinessRequirements(JSON.parse(stored));
+      this.businessRequirements = configuration.requirements;
+      this.businessRequirementIdHighWaterMark = Math.max(
+        this.businessRequirementIdHighWaterMark,
+        configuration.lastAssignedId ?? 0
+      );
     } catch {
       this.saveState = 'error';
       this.saveMessage = 'Saved business requirements could not be loaded';
@@ -940,15 +973,21 @@ export class AppComponent {
       if (!this.isRecord(state)) return;
       this.resultsDirty = state['resultsDirty'] === true;
       this.configDirty = state['configDirty'] === true;
+      this.businessRequirementsDirty = state['businessRequirementsDirty'] === true;
     } catch {
       this.resultsDirty = false;
       this.configDirty = false;
+      this.businessRequirementsDirty = false;
     }
   }
 
   private persistDirtyState(): void {
     try {
-      localStorage.setItem(this.dirtyStateStorageKey, JSON.stringify({ resultsDirty: this.resultsDirty, configDirty: this.configDirty }));
+      localStorage.setItem(this.dirtyStateStorageKey, JSON.stringify({
+        resultsDirty: this.resultsDirty,
+        configDirty: this.configDirty,
+        businessRequirementsDirty: this.businessRequirementsDirty
+      }));
     } catch {
       this.setStatus('error', 'Could not save export status to browser storage');
     }
@@ -974,9 +1013,19 @@ export class AppComponent {
     this.persistDirtyState();
   }
 
+  private markBusinessRequirementsDirty(): void {
+    this.businessRequirementsDirty = true;
+    this.persistDirtyState();
+  }
+
+  private markBusinessRequirementsClean(): void {
+    this.businessRequirementsDirty = false;
+    this.persistDirtyState();
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   warnBeforeUnload(event: BeforeUnloadEvent): void {
-    if (!this.resultsDirty && !this.configDirty) return;
+    if (!this.resultsDirty && !this.configDirty && !this.businessRequirementsDirty) return;
     event.preventDefault();
     event.returnValue = '';
   }
@@ -1027,6 +1076,7 @@ export class AppComponent {
       const configuration: BusinessRequirementsConfiguration = {
         format: 'leap-business-requirements',
         version: 1,
+        lastAssignedId: this.businessRequirementIdHighWaterMark,
         requirements: this.businessRequirements.map((requirement) => ({ ...requirement }))
       };
       localStorage.setItem(this.businessRequirementsStorageKey, JSON.stringify(configuration));
@@ -1038,12 +1088,15 @@ export class AppComponent {
     }
   }
 
-  private nextBusinessRequirementId(): string {
-    const nextId = this.businessRequirements.reduce((maximum, requirement) => {
+  private highestBusinessRequirementId(requirements: BusinessRequirement[]): number {
+    return requirements.reduce((maximum, requirement) => {
       const match = requirement.id.match(/^BR-(\d+)$/);
       return match ? Math.max(maximum, Number(match[1])) : maximum;
-    }, 0) + 1;
-    return `BR-${nextId.toString().padStart(2, '0')}`;
+    }, 0);
+  }
+
+  private nextBusinessRequirementId(): string {
+    return `BR-${(this.businessRequirementIdHighWaterMark + 1).toString().padStart(2, '0')}`;
   }
 
   private createTeamId(): string {
@@ -1094,7 +1147,7 @@ export class AppComponent {
     window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
   }
 
-  private validateBusinessRequirements(value: unknown): BusinessRequirement[] {
+  private validateBusinessRequirements(value: unknown): BusinessRequirementsConfiguration {
     if (!this.isRecord(value) || value['format'] !== 'leap-business-requirements' || value['version'] !== 1 || !Array.isArray(value['requirements'])) {
       throw new Error('This file is not a supported LEAP business requirements file.');
     }
@@ -1108,14 +1161,27 @@ export class AppComponent {
       const id = candidate['id'].trim().toUpperCase();
       const description = candidate['description'].trim();
       const priority = candidate['priority'];
-      if (!/^BR-\d{2,}$/.test(id) || !description || (priority !== 'Must' && priority !== 'Should' && priority !== 'Could')) {
+      if (!/^BR-\d{2,}$/.test(id) || !Number.isSafeInteger(Number(id.slice(3))) || !description || (priority !== 'Must' && priority !== 'Should' && priority !== 'Could')) {
         throw new Error('Every requirement needs a valid BR ID, description, and priority.');
       }
       if (ids.has(id)) throw new Error('Business requirement IDs must be unique.');
       ids.add(id);
       requirements.push({ id, description, priority });
     }
-    return requirements;
+
+    const highestId = this.highestBusinessRequirementId(requirements);
+    const storedLastAssignedId = value['lastAssignedId'];
+    if (storedLastAssignedId !== undefined && (!Number.isSafeInteger(storedLastAssignedId) || (storedLastAssignedId as number) < 0)) {
+      throw new Error('The requirements file contains an invalid last assigned ID.');
+    }
+
+    return {
+      format: 'leap-business-requirements',
+      version: 1,
+      ...(typeof value['source'] === 'string' ? { source: value['source'] } : {}),
+      lastAssignedId: Math.max(highestId, typeof storedLastAssignedId === 'number' ? storedLastAssignedId : 0),
+      requirements
+    };
   }
 
   private validateTeamConfig(value: unknown): ReviewTeam[] {
