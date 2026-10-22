@@ -90,6 +90,7 @@ export class AppComponent {
   readonly appVersion = packageInfo.version;
   readonly copyrightYear = new Date().getFullYear();
   teams: ReviewTeam[] = TEAMS.map((team) => ({ ...team, members: [...team.members] }));
+  selectedTeamId = 'all';
   readonly sections = SECTIONS;
   readonly options = RATING_OPTIONS;
   readonly storageKey = 'leap-review-ratings-v1';
@@ -117,6 +118,7 @@ export class AppComponent {
   configDirty = false;
   private teamModalReturnFocus: HTMLElement | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
+  private collapseSectionsAfterPrint = false;
 
   @ViewChild('teamAliasInput') private teamAliasInput?: ElementRef<HTMLInputElement>;
   @ViewChild('teamMemberNameInput') private teamMemberNameInput?: ElementRef<HTMLInputElement>;
@@ -143,6 +145,16 @@ export class AppComponent {
   }
 
   expandedSections: Record<string, boolean> = {};
+
+  get visibleTeams(): ReviewTeam[] {
+    if (this.selectedTeamId === 'all') return this.teams;
+    const selectedTeam = this.teams.find((team) => team.id === this.selectedTeamId);
+    return selectedTeam ? [selectedTeam] : this.teams;
+  }
+
+  setTeamFilter(event: Event): void {
+    this.selectedTeamId = (event.target as HTMLSelectElement).value;
+  }
 
   get allSectionsExpanded(): boolean {
     return this.sections.length > 0 && this.sections.every((section) => this.isSectionExpanded(section.id));
@@ -334,6 +346,13 @@ export class AppComponent {
     this.persistTeams(wasEditing ? 'Team details updated' : 'Team added');
   }
 
+  @HostListener('window:afterprint')
+  onPrintComplete(): void {
+    if (!this.collapseSectionsAfterPrint) return;
+    this.expandedSections = Object.fromEntries(this.sections.map((section) => [section.id, false]));
+    this.collapseSectionsAfterPrint = false;
+  }
+
   @HostListener('document:keydown', ['$event'])
   onTeamEditorKeydown(event: KeyboardEvent): void {
     if (!this.teamFormOpen) return;
@@ -389,6 +408,7 @@ export class AppComponent {
     if (!await this.confirmAction('Delete team', warning, 'Delete')) return;
 
     this.teams = this.teams.filter((candidate) => candidate.id !== team.id);
+    if (this.selectedTeamId === team.id) this.selectedTeamId = 'all';
     for (const key of teamRatings) delete this.ratings[key];
     if (this.editingTeamId === team.id) this.cancelTeamEdit();
     this.markConfigDirty();
@@ -443,6 +463,7 @@ export class AppComponent {
 
       for (const key of orphanedRatings) delete this.ratings[key];
       this.teams = importedTeams;
+      if (this.selectedTeamId !== 'all' && !importedIds.has(this.selectedTeamId)) this.selectedTeamId = 'all';
       this.cancelTeamEdit();
       this.cancelMemberEdit();
       if (orphanedRatings.length) this.markResultsDirty();
@@ -461,8 +482,8 @@ export class AppComponent {
     }
   }
 
-  sectionCompleted(section: ReviewSection): number {
-    return section.items.reduce((count, item) => count + this.teams.filter((team) => this.ratingFor(`item:${item.id}`, team.id) !== '').length, 0);
+  sectionCompleted(section: ReviewSection, reviewTeams: ReviewTeam[] = this.visibleTeams): number {
+    return section.items.reduce((count, item) => count + reviewTeams.filter((team) => this.ratingFor(`item:${item.id}`, team.id) !== '').length, 0);
   }
 
   sectionTeamCompleted(section: ReviewSection, teamId: string): number {
@@ -585,7 +606,9 @@ export class AppComponent {
   }
 
   exportPdf(): void {
-    window.print();
+    this.expandedSections = Object.fromEntries(this.sections.map((section) => [section.id, true]));
+    this.collapseSectionsAfterPrint = true;
+    window.setTimeout(() => window.print());
   }
 
   ratingKey(rowId: string, teamId: string): string {

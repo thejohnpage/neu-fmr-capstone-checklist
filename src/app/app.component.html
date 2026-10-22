@@ -13,9 +13,9 @@
           <span class="nav-number">0{{ index + 1 }}</span>
           <span class="nav-link-copy">
             <span>{{ section.title }}</span>
-            <small>{{ sectionCompleted(section) }} / {{ section.items.length * teams.length }} rated</small>
+            <small>{{ sectionCompleted(section) }} / {{ section.items.length * visibleTeams.length }} rated</small>
           </span>
-          <span class="nav-dot" [class.complete]="sectionCompleted(section) === section.items.length * teams.length" aria-hidden="true"></span>
+          <span class="nav-dot" [class.complete]="sectionCompleted(section) === section.items.length * visibleTeams.length" aria-hidden="true"></span>
         </a>
       }
     </nav>
@@ -72,16 +72,21 @@
         </div>
       </section>
 
-      <section class="team-key" aria-labelledby="team-key-title" [attr.style]="'--team-count: ' + teams.length">
+      <section class="team-key" aria-label="Team display filter and configured teams" [attr.style]="'--team-count: ' + visibleTeams.length">
         <div class="team-key-heading">
-          <span id="team-key-title">Reviewing teams</span>
-          <span class="team-key-rule"></span>
-          <span class="team-key-count">01 — {{ teamCountLabel }}</span>
+          <span class="team-key-count">{{ visibleTeams.length }} shown</span>
+          <label class="team-filter">Show
+            <select [value]="selectedTeamId" (change)="setTeamFilter($event)" aria-label="Show ratings for">
+              <option value="all">All teams</option>
+              @for (team of teams; track team.id) {
+                <option [value]="team.id">{{ team.shortName }} — {{ team.name }}</option>
+              }
+            </select>
+          </label>
         </div>
         <div class="team-list">
-          @for (team of teams; track team.id; let index = $index) {
+          @for (team of visibleTeams; track team.id) {
             <div class="team-identity">
-              <span class="team-index">{{ (index + 1).toString().padStart(2, '0') }}</span>
               <span class="team-abbreviation">{{ team.shortName }}</span>
               <span class="team-full-name">{{ team.name }}</span>
             </div>
@@ -144,23 +149,23 @@
       <section class="overall-section" aria-labelledby="overall-title">
         <div class="overall-heading">
           <div>
-            <div class="section-kicker">FINAL ASSESSMENT <span>·</span> ALL TEAMS</div>
+            <div class="section-kicker">FINAL ASSESSMENT <span>·</span> {{ selectedTeamId === 'all' ? 'ALL TEAMS' : 'SELECTED TEAM' }}</div>
             <h2 id="overall-title">Overall rating</h2>
             <p>Calculated automatically from each team’s Must and Should ratings.</p>
           </div>
           <span class="critical-tag">CRITICAL</span>
         </div>
-        <div class="rating-matrix overall-matrix" role="group" aria-label="Overall team ratings" [attr.style]="'--team-count: ' + teams.length">
+        <div class="rating-matrix overall-matrix" role="group" aria-label="Overall team ratings" [attr.style]="'--team-count: ' + visibleTeams.length">
           <div class="matrix-header">
             <div class="matrix-label">TEAM</div>
-            @for (team of teams; track team.id) {
+            @for (team of visibleTeams; track team.id) {
               <div class="matrix-team-heading"><span>{{ team.shortName }}</span><small>{{ team.name }}</small></div>
             }
           </div>
           <div class="matrix-row overall-row">
             <div class="criterion"><span class="criterion-index">00</span><span class="criterion-name">Overall project assessment</span></div>
             <div class="rating-cells">
-              @for (team of teams; track team.id) {
+              @for (team of visibleTeams; track team.id) {
                 @let assessment = overallRating(team.id);
                 <div class="team-rating overall-assessment-cell">
                   <span class="mobile-team-name">{{ team.shortName }} <span>{{ team.name }}</span></span>
@@ -195,15 +200,15 @@
                 </div>
               </div>
               <div class="section-completion">
-                <span>{{ sectionCompleted(section) }} <span class="completion-total">/ {{ section.items.length * teams.length }}</span></span>
+                <span>{{ sectionCompleted(section) }} <span class="completion-total">/ {{ section.items.length * visibleTeams.length }}</span></span>
                 <small>RATINGS</small>
               </div>
             </summary>
 
-            <div class="rating-matrix" role="group" [attr.aria-label]="section.title + ' ratings by team'" [attr.style]="'--team-count: ' + teams.length">
+            <div class="rating-matrix" role="group" [attr.aria-label]="section.title + ' ratings by team'" [attr.style]="'--team-count: ' + visibleTeams.length">
               <div class="matrix-header">
                 <div class="matrix-label">EVALUATION ITEM <span>/ PRIORITY</span></div>
-                @for (team of teams; track team.id) {
+                @for (team of visibleTeams; track team.id) {
                   <div class="matrix-team-heading"><span>{{ team.shortName }}</span><small>{{ team.name }}</small></div>
                 }
               </div>
@@ -214,7 +219,7 @@
                     <span class="criterion-copy"><span class="criterion-name">{{ item.description }}</span><span class="priority-tag" [class.priority-must]="item.priority === 'Must'" [class.priority-should]="item.priority === 'Should'" [class.priority-opt]="item.priority === 'Opt'">{{ item.priority }}</span></span>
                   </div>
                   <div class="rating-cells">
-                    @for (team of teams; track team.id) {
+                    @for (team of visibleTeams; track team.id) {
                       <div class="team-rating">
                         <span class="mobile-team-name">{{ team.shortName }} <span>{{ team.name }}</span></span>
                         <mat-form-field appearance="outline" class="rating-field" [class.has-rating]="ratingFor('item:' + item.id, team.id) !== ''" [class.rating-critical]="ratingFor('item:' + item.id, team.id) === 'no' || ratingFor('item:' + item.id, team.id) === 'football'">
@@ -231,7 +236,7 @@
               <div class="matrix-row section-rating-row">
                 <div class="criterion"><span class="criterion-index">Σ</span><span class="criterion-name">Calculated section rating</span></div>
                 <div class="rating-cells">
-                  @for (team of teams; track team.id) {
+                  @for (team of visibleTeams; track team.id) {
                     @let summary = sectionRating(section, team.id);
                     <div class="team-rating section-rating-cell">
                       <span class="mobile-team-name">{{ team.shortName }} <span>{{ team.name }}</span></span>

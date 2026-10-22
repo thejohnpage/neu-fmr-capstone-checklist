@@ -104,13 +104,13 @@ h1 em { color: #738d5b; font-weight: 400; }
 .stat-number { color: #315446; font-family: 'DM Serif Display', Georgia, serif; font-size: 44px; line-height: 1; }
 .stat-label { color: #77837b; font-size: 9px; font-weight: 700; letter-spacing: .12em; line-height: 1.5; }
 
-.team-key { display: grid; grid-template-columns: 145px 1fr; align-items: center; gap: 16px; padding: 15px 18px; border: 1px solid #dce3da; background: #fbfcf9; }
-.team-key-heading { display: flex; flex-direction: column; gap: 4px; color: #68756d; font-size: 10px; font-weight: 600; }
-.team-key-rule { display: none; }
+.team-key { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 15px 18px; border: 1px solid #dce3da; background: #fbfcf9; }
+.team-key-heading { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; grid-column: 2; grid-row: 1; color: #68756d; font-size: 10px; font-weight: 600; }
+.team-filter { display: flex; align-items: center; gap: 7px; }
+.team-filter select { width: min(260px, 60vw); min-height: 30px; padding: 0 25px 0 8px; border: 1px solid #d5ded4; border-radius: 0; background: #fff; color: #355141; font: inherit; font-size: 10px; }
 .team-key-count { color: #9aa49c; font-size: 8px; letter-spacing: .12em; }
-.team-list { display: grid; grid-column: 2; grid-template-columns: repeat(var(--team-count), minmax(0, 1fr)); gap: 10px; }
-.team-identity { display: grid; grid-template-columns: 21px auto; column-gap: 8px; align-items: center; min-width: 0; }
-.team-index { grid-row: span 2; color: #9ba79d; font-size: 9px; }
+.team-list { display: grid; grid-column: 1; grid-row: 1; grid-template-columns: repeat(var(--team-count), minmax(0, 1fr)); gap: 10px; }
+.team-identity { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; min-width: 0; }
 .team-abbreviation { color: #253a30; font-size: 11px; font-weight: 700; letter-spacing: .06em; }
 .team-full-name { overflow: hidden; color: #77837b; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .team-settings { grid-column: 1 / -1; border-top: 1px solid #e7ece5; }
@@ -327,10 +327,8 @@ h1 em { color: #738d5b; font-weight: 400; }
   .stat-number { font-size: 34px; }
   .stat-label { font-size: 7px; }
   .team-key { grid-template-columns: 1fr; gap: 11px; padding: 12px; }
-  .team-key-heading { flex-direction: row; align-items: center; gap: 8px; }
-  .team-key-rule { display: block; flex: 1; height: 1px; background: #e2e8df; }
-  .team-list { grid-column: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 11px; }
-  .team-identity { grid-template-columns: 18px auto; column-gap: 6px; }
+  .team-key-heading { grid-column: 1; grid-row: 1; flex-direction: row; justify-content: flex-end; align-items: center; gap: 8px; }
+  .team-list { grid-column: 1; grid-row: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 11px; }
   .team-full-name { font-size: 8px; }
   .rating-key { gap: 7px 11px; padding: 12px 1px 17px; }
   .key-title { flex-basis: 100%; }
@@ -451,7 +449,7 @@ h1 em { color: #738d5b; font-weight: 400; }
 :root[data-theme='dark'] .topbar { border-color: var(--line); background: rgba(17, 27, 22, .96); }
 :root[data-theme='dark'] :is(.team-key, .review-section, .startup-modal, .team-editor-modal, .startup-file-option) { border-color: var(--border); background: var(--surface); }
 :root[data-theme='dark'] :is(.overall-section, .section-rating-row, .team-editor-roster, .member-form, .startup-order-note) { border-color: var(--border); background: var(--surface-accent); }
-:root[data-theme='dark'] :is(.settings-secondary-button, .settings-text-button, .team-editor-close, .reset-button) { border-color: var(--border); background-color: var(--input-surface); color: var(--ink); }
+:root[data-theme='dark'] :is(.settings-secondary-button, .settings-text-button, .team-editor-close, .reset-button, .team-filter select) { border-color: var(--border); background-color: var(--input-surface); color: var(--ink); }
 :root[data-theme='dark'] .rating-field .mat-mdc-text-field-wrapper { background: var(--input-surface); }
 :root[data-theme='dark'] .rating-field .mat-mdc-select-value { color: var(--ink); }
 :root[data-theme='dark'] .rating-field.has-rating .mat-mdc-select-value { color: #d8edc3; }
@@ -504,7 +502,7 @@ h1 em { color: #738d5b; font-weight: 400; }
 .theme-toggle:hover { border-color: #8ba27b; background: var(--hover-surface); }
 :root[data-theme='dark'] .theme-toggle > span:first-child { color: #c8e8a0; }
 
-.review-label, .nav-number, .nav-link-copy small, .sidebar-progress > small, .sidebar-note, .breadcrumb, .save-indicator, .export-indicator, .text-button, .reset-button, .eyebrow, .stat-label, .team-key-heading, .team-key-count, .team-index, .team-abbreviation, .team-full-name, .team-settings > summary, .team-settings > summary span, .team-settings-heading p, .managed-team strong, .managed-team-top > div:first-child span, .managed-member-list li, .managed-member-list .empty-member-list, .member-form label, .settings-primary-button, .settings-secondary-button, .settings-text-button, .team-form-error, .team-config-actions strong, .team-config-actions span, .key-title, .key-choice, .section-kicker, .matrix-label, .matrix-team-heading > span, .matrix-team-heading small, .criterion-index, .criterion-name, .priority-tag, .section-completion small, .completion-total, .critical-tag, .critical-inline, .page-footer, .startup-eyebrow, .startup-modal > p, .startup-file-option h3, .startup-file-option p, .startup-modal-actions > span, .team-editor-heading p, .team-editor-fields label, .team-editor-roster-heading h3, .team-editor-roster-heading p, .team-editor-member-list li, .team-editor-member-list .empty-member-list { font-size: 12px; }
+.review-label, .nav-number, .nav-link-copy small, .sidebar-progress > small, .sidebar-note, .breadcrumb, .save-indicator, .export-indicator, .text-button, .reset-button, .eyebrow, .stat-label, .team-key-heading, .team-key-count, .team-abbreviation, .team-full-name, .team-settings > summary, .team-settings > summary span, .team-settings-heading p, .managed-team strong, .managed-team-top > div:first-child span, .managed-member-list li, .managed-member-list .empty-member-list, .member-form label, .settings-primary-button, .settings-secondary-button, .settings-text-button, .team-form-error, .team-config-actions strong, .team-config-actions span, .key-title, .key-choice, .section-kicker, .matrix-label, .matrix-team-heading > span, .matrix-team-heading small, .criterion-index, .criterion-name, .priority-tag, .section-completion small, .completion-total, .critical-tag, .critical-inline, .page-footer, .startup-eyebrow, .startup-modal > p, .startup-file-option h3, .startup-file-option p, .startup-modal-actions > span, .team-editor-heading p, .team-editor-fields label, .team-editor-roster-heading h3, .team-editor-roster-heading p, .team-editor-member-list li, .team-editor-member-list .empty-member-list { font-size: 12px; }
 .nav-link-copy, .overall-row .criterion-name, .mobile-team-name, .mobile-team-name > span, .rating-field, .review-section .rating-field, .overall-row .rating-field { font-size: 12px; }
 
 @media print {
